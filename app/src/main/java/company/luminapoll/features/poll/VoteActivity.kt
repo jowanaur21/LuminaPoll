@@ -137,6 +137,24 @@ class VoteActivity : BaseActivity() {
     private fun handlePollUpdate(poll: Poll) {
         currentPoll = poll
         progressBar.visibility = View.GONE
+
+        // Prevent host from voting, redirect to results
+        val currentUserId = if (mode == "LOCAL") {
+            DeviceIdProvider.getDeviceId(this)
+        } else {
+            FirebaseAuth.getInstance().currentUser?.uid ?: ""
+        }
+
+        if (poll.hostId == currentUserId) {
+            val intent = Intent(this, LivePollActivity::class.java).apply {
+                putExtra("EXTRA_MODE", mode)
+                putExtra("EXTRA_POLL_CODE", poll.code)
+            }
+            startActivity(intent)
+            finish()
+            return
+        }
+
         updatePollUI(poll)
     }
 

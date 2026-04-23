@@ -94,6 +94,16 @@ class OnlinePollManager {
         }
     }
 
+    suspend fun stopPollEarly(code: String): Boolean {
+        return try {
+            pollsCollection.document(code).update("status", PollStatus.ENDED).await()
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
     fun leavePoll() {
         val poll = _currentPoll.value ?: return
         pollsCollection.document(poll.code).update("participantCount", (poll.participantCount - 1).coerceAtLeast(0))

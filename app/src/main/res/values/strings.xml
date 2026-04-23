@@ -112,4 +112,6 @@
     <string name="vote_success">Vote submitted successfully!</string>
     <string name="error_no_selection">Please select an option</string>
     <string name="view_active_poll">View Active Poll</string>
+    <string name="btn_view_results">View Results</string>
+    <string name="stop_poll">Stop Poll</string>
 </resources>

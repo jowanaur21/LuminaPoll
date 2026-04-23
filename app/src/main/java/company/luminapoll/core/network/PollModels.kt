@@ -15,6 +15,7 @@ data class Poll(
     val question: String,
     val options: List<PollOption>,
     val hostIp: String,
+    val hostId: String = "", // Added to identify the host
     val hostName: String = "Unknown Host",
     val port: Int = 8080,
     var participantCount: Int = 0,

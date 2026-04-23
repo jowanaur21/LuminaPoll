@@ -14,6 +14,8 @@ import company.luminapoll.R
 import company.luminapoll.core.base.BaseActivity
 import company.luminapoll.core.network.Poll
 import company.luminapoll.core.network.PollStatus
+import company.luminapoll.core.utils.DeviceIdProvider
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -24,8 +26,9 @@ class LivePollActivity : BaseActivity() {
     private lateinit var llResultsContainer: LinearLayout
     private lateinit var tvParticipantCount: TextView
     private lateinit var tvTimer: TextView
+    private lateinit var btnStopPoll: Button
     private var timerJob: Job? = null
-    private var initialLoad = true
+    private var currentPoll: Poll? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,6 +49,7 @@ class LivePollActivity : BaseActivity() {
         llResultsContainer = findViewById(R.id.ll_results_container)
         tvParticipantCount = findViewById(R.id.tv_participant_count)
         tvTimer = findViewById(R.id.tv_timer)
+        btnStopPoll = findViewById(R.id.btn_stop_poll)
 
         findViewById<ImageView>(R.id.btn_back).setOnClickListener {
             finish()
@@ -53,6 +57,32 @@ class LivePollActivity : BaseActivity() {
 
         findViewById<Button>(R.id.btn_back_dashboard).setOnClickListener {
             finish()
+        }
+
+        btnStopPoll.setOnClickListener {
+            showStopConfirmation()
+        }
+    }
+
+    private fun showStopConfirmation() {
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Stop Poll Early?")
+            .setMessage("Are you sure you want to end this poll now? No more votes will be accepted.")
+            .setPositiveButton("Stop") { _, _ -> stopPollEarly() }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun stopPollEarly() {
+        val app = application as LuminaPollApp
+        if (mode == "LOCAL") {
+            app.localServer.stop()
+        } else {
+            currentPoll?.let {
+                lifecycleScope.launch {
+                    app.onlinePollManager.stopPollEarly(it.code)
+                }
+            }
         }
     }
 
@@ -66,6 +96,7 @@ class LivePollActivity : BaseActivity() {
         lifecycleScope.launch {
             flow.collectLatest { poll ->
                 poll?.let { 
+                    currentPoll = it
                     updateUI(it)
                     startTimer(it.endTimeMillis, it.status)
                 }
@@ -98,6 +129,19 @@ class LivePollActivity : BaseActivity() {
 
     private fun updateUI(poll: Poll) {
         tvParticipantCount.text = poll.participantCount.toString()
+        
+        // Host check for Stop button
+        val currentUserId = if (mode == "LOCAL") {
+            DeviceIdProvider.getDeviceId(this)
+        } else {
+            FirebaseAuth.getInstance().currentUser?.uid ?: ""
+        }
+
+        if (poll.hostId == currentUserId && poll.status == PollStatus.ACTIVE) {
+            btnStopPoll.visibility = View.VISIBLE
+        } else {
+            btnStopPoll.visibility = View.GONE
+        }
         
         val totalVotes = poll.options.sumOf { it.votes }
 

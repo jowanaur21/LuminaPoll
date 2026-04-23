@@ -16,6 +16,7 @@ import company.luminapoll.R
 import company.luminapoll.core.base.BaseActivity
 import company.luminapoll.core.network.Poll
 import company.luminapoll.core.network.PollOption
+import company.luminapoll.core.utils.DeviceIdProvider
 import company.luminapoll.core.utils.NetworkUtils
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -127,6 +128,7 @@ class CreatePollActivity : BaseActivity() {
 
         val currentUser = FirebaseAuth.getInstance().currentUser
         val hostName = currentUser?.displayName ?: currentUser?.email ?: "Unknown Host"
+        val hostId = if (mode == "ONLINE") currentUser?.uid ?: "" else DeviceIdProvider.getDeviceId(this)
 
         if (mode == "LOCAL") {
             val ip = NetworkUtils.getLocalIpAddress()
@@ -142,6 +144,7 @@ class CreatePollActivity : BaseActivity() {
                 question = question,
                 options = optionsList,
                 hostIp = ip,
+                hostId = hostId,
                 hostName = hostName,
                 maxParticipants = maxParticipants,
                 durationMinutes = durationMinutes,
@@ -159,6 +162,7 @@ class CreatePollActivity : BaseActivity() {
                 question = question,
                 options = optionsList,
                 hostIp = "online",
+                hostId = hostId,
                 hostName = hostName,
                 maxParticipants = maxParticipants,
                 durationMinutes = durationMinutes,
