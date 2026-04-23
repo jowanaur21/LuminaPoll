@@ -1,0 +1,14 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="40dp"
+    android:height="24dp"
+    android:viewportWidth="40"
+    android:viewportHeight="24">
+    <!-- Rounded Background -->
+    <path
+        android:fillColor="#806CB1E8"
+        android:pathData="M8,0h24c4.4,0 8,3.6 8,8v8c0,4.4 -3.6,8 -8,8H8c-4.4,0 -8,-3.6 -8,-8V8C0,3.6 3.6,0 8,0z"/>
+    <!-- LIVE Text - Centered -->
+    <path
+        android:fillColor="#1A73E8"
+        android:pathData="M6,7h2v8h4v2h-6zM14,7h2v10h-2zM18,7h2l2,6l2,-6h2l-3,10h-2zM28,7h6v2h-4v2h4v2h-4v2h4v2h-6z"/>
+</vector>

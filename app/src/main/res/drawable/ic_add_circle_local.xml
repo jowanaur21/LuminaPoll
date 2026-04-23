@@ -1,0 +1,27 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="80dp"
+    android:height="80dp"
+    android:viewportWidth="80"
+    android:viewportHeight="80">
+
+    <!-- Circle with Gradient -->
+    <path android:pathData="M40,0 A40,40 0 1,0 80,40 A40,40 0 0,0 40,0 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="10"
+                android:startY="10"
+                android:endX="70"
+                android:endY="70"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#00D2FF" />
+                <item android:offset="1.0" android:color="#3A7BD5" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- White Rounded Plus Sign -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M44,36 V24 A4,4 0 0,0 36,24 V36 H24 A4,4 0 0,0 24,44 H36 V56 A4,4 0 0,0 44,56 V44 H56 A4,4 0 0,0 56,36 Z" />
+</vector>

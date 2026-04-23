@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Padding & Margins -->
+    <dimen name="spacing_small">8dp</dimen>
+    <dimen name="spacing_medium">16dp</dimen>
+    <dimen name="spacing_large">24dp</dimen>
+    <dimen name="spacing_xlarge">48dp</dimen>
+    <dimen name="spacing_xxlarge">64dp</dimen>
+    <dimen name="margin_top">80dp</dimen>
+    <dimen name="margin_bottom">0dp</dimen>
+    <dimen name="margin_horizontal">24dp</dimen>
+
+    <!-- Corner Radius -->
+    <dimen name="corner_radius_medium">12dp</dimen>
+    <dimen name="corner_radius_card">24dp</dimen>
+    <dimen name="corner_radius_button">32dp</dimen>
+
+    <!-- Icon Sizes -->
+    <dimen name="icon_size_action">40dp</dimen>
+    <dimen name="icon_size_small">32dp</dimen>
+    <dimen name="icon_size_medium">64dp</dimen>
+    <dimen name="icon_size_large">160dp</dimen>
+    <dimen name="icon_size_xlarge">180dp</dimen>
+
+    <!-- Text Sizes -->
+    <dimen name="text_size_small">16sp</dimen>
+    <dimen name="text_size_medium">18sp</dimen>
+    <dimen name="text_size_large">20sp</dimen>
+    <dimen name="text_size_xlarge">22sp</dimen>
+    <dimen name="text_size_xxlarge">24sp</dimen>
+    <dimen name="text_size_title">28sp</dimen>
+    <dimen name="text_size_huge">40sp</dimen>
+
+    <!-- UI Elements -->
+    <dimen name="button_height">64dp</dimen>
+    <dimen name="card_min_height">180dp</dimen>
+    <dimen name="logo_size">70dp</dimen>
+
+</resources>

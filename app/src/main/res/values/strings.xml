@@ -1,0 +1,115 @@
+<resources>
+    <string name="app_name">Lumina Poll</string>
+    <string name="start">Start</string>
+    <string name="tag_line">Smart Polling\nfor Everyone</string>
+    
+    <!-- Dashboard / Home Strings -->
+    <string name="dashboard_title">Dashboard</string>
+    <string name="welcome_title">Welcome! 👋</string>
+    <string name="choose_mode_instruction">Choose how you want to continue</string>
+    <string name="local_mode_title">Local (Offline)</string>
+    <string name="local_mode_desc">Works without an internet</string>
+    <string name="online_mode_title">Online Mode</string>
+    <string name="online_mode_desc">Connect via internet</string>
+
+    <!-- Local Dashboard Strings -->
+    <string name="local_dashboard_title">Local Dashboard</string>
+    <string name="online_dashboard_title">Online Dashboard</string>
+    <string name="local_dashboard_subtitle">Choose an action</string>
+    <string name="online_dashboard_subtitle">Explore polls worldwide</string>
+    <string name="join_poll_title">Join Poll</string>
+    <string name="join_poll_desc">Join poll, participate\nand vote in active poll</string>
+    <string name="host_poll_title">Host Poll</string>
+    <string name="host_poll_desc">Create and host\na poll</string>
+
+    <!-- Scan Polls Strings -->
+    <string name="join_offline_title">Join (Offline)</string>
+    <string name="scanning_polls">Scanning for polls…</string>
+    <string name="scanning_desc">Please wait while we scan\nthe local network.</string>
+    <string name="cancel">Cancel</string>
+    <string name="enter_code">Enter Code</string>
+
+    <!-- Login Screen Strings -->
+    <string name="login_title">Login</string>
+    <string name="welcome_back">Welcome back! 👋</string>
+    <string name="login_to_continue">Login to continue</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="login_button">Login</string>
+    <string name="or_divider">OR</string>
+    <string name="connect_with_google">Connect with Google</string>
+    <string name="dont_have_account">Don’t have account? </string>
+    <string name="register">Register</string>
+
+    <!-- Forgot Password Strings -->
+    <string name="forgot_password_title">Forgot Password</string>
+    <string name="forgot_password_desc">Enter your email and we will\nsend you a reset link.</string>
+    <string name="enter_email_hint">Enter your email</string>
+    <string name="send_reset_link">Send Reset Link</string>
+    <string name="back_to_login">Back to Login</string>
+
+    <!-- New Password Strings -->
+    <string name="create_new_password_title">Create New Password</string>
+    <string name="create_new_password_desc">Your new password must be\ndifferent from previous ones.</string>
+    <string name="new_password_hint">New Password</string>
+    <string name="confirm_new_password_hint">Confirm New Password</string>
+    <string name="reset_password_button">Reset Password</string>
+    <string name="at_least_8_chars">At least 8 characters</string>
+    <string name="include_number_symbol">Include number &amp; symbol</string>
+    <string name="passwords_match">Passwords match</string>
+
+    <!-- Register Screen Strings -->
+    <string name="register_title">Register</string>
+    <string name="create_account">Create Account</string>
+    <string name="hello_hand">Hello! 👋</string>
+    <string name="register_to_continue">Register to get started</string>
+    <string name="email">Email</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="register_button">Register</string>
+    <string name="already_have_account">Already have an account? </string>
+    <string name="login_link">Login</string>
+    <string name="default_web_client_id" translatable="false">320399631316-f3ol3v3ujtf845a55d3hf8qo3snk0tqj.apps.googleusercontent.com</string>
+
+    <!-- Create Poll Screen Strings -->
+    <string name="create_poll_title">Create Poll</string>
+    <string name="poll_name_label">Poll Name</string>
+    <string name="enter_poll_name_hint">Enter poll name (e.g. Weekly Meeting)</string>
+    <string name="poll_question_label">Poll Question</string>
+    <string name="enter_question_hint">Enter your question here</string>
+    <string name="poll_options_label">Poll Options</string>
+    <string name="add_option_button">Add Option</string>
+    <string name="option_hint">Option %1$d</string>
+    <string name="create_poll_button">Create Poll</string>
+    <string name="error_empty_question">Question cannot be empty</string>
+    <string name="error_min_options">Please add at least 2 options</string>
+    <string name="error_empty_option">Option cannot be empty</string>
+    <string name="max_participants_label">Max Participants</string>
+    <string name="duration_minutes_label">Duration (Minutes)</string>
+
+    <!-- Poll Code Screen Strings -->
+    <string name="poll_created_title">Poll Created!</string>
+    <string name="poll_code_desc">Share this code with your\nparticipants to join the poll.</string>
+    <string name="copy_code">Copy Code</string>
+    <string name="share_poll">Share Poll</string>
+    <string name="go_to_dashboard">Go to Dashboard</string>
+
+    <!-- Enter Code Screen Strings -->
+    <string name="join_poll_title">Join Poll</string>
+    <string name="enter_code_title">Enter Poll Code</string>
+    <string name="enter_code_desc">Enter the 6-digit code to\njoin and vote in the poll.</string>
+    <string name="enter_code_hint">Enter the code\nprovided by the host</string>
+    <string name="join_poll_button">Join Poll</string>
+    <string name="join_button">Join</string>
+    <string name="code_hint">######</string>
+    <string name="enter_code_hint_placeholder">Enter code (e.g. 1A2B)</string>
+    <string name="error_invalid_code">Please enter a valid 6-digit code</string>
+
+    <!-- Vote Screen Strings -->
+    <string name="vote_title">Cast Your Vote</string>
+    <string name="question_label">Question</string>
+    <string name="submit_vote">Submit Vote</string>
+    <string name="vote_success">Vote submitted successfully!</string>
+    <string name="error_no_selection">Please select an option</string>
+    <string name="view_active_poll">View Active Poll</string>
+</resources>

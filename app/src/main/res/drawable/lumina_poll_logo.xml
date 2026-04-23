@@ -1,0 +1,48 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+    <path
+        android:pathData="M150,0h212c82.84,0 150,67.16 150,150v212c0,82.84 -67.16,150 -150,150h-212c-82.84,0 -150,-67.16 -150,-150v-212c0,-82.84 67.16,-150 150,-150z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="43.93"
+                android:startY="43.93"
+                android:endX="468.07"
+                android:endY="468.07"
+                android:type="linear">
+                <item android:offset="0" android:color="#FF6EBEFF"/>
+                <item android:offset="1" android:color="#FF0056AB"/>
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Shadow path -->
+    <path
+        android:pathData="M512,303.57V362c0,82.84 -67.16,150 -150,150H182.41l-79.17,-79.17 63.14,-227.08 52.41,52.41 69.49,-178.31z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="153.77"
+                android:startY="214.36"
+                android:endX="437.77"
+                android:endY="498.36"
+                android:type="linear">
+                <item android:offset="0" android:color="#59000000"/>
+                <item android:offset="1" android:color="#00000000"/>
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Bar 1 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M134.85,192.67m-44.53,0a44.53,44.53 0,1 1,89.06 0v164.27a44.53,44.53 0,1 1,-89.06 0z" />
+    <!-- Bar 2 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M256,66m-44.53,0a44.53,44.53 0,1 1,89.06 0v290.94a44.53,44.53 0,1 1,-89.06 0z" />
+    <!-- Bar 3 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M377.15,319.33m-44.53,0a44.53,44.53 0,1 1,89.06 0v37.61a44.53,44.53 0,1 1,-89.06 0z" />
+</vector>

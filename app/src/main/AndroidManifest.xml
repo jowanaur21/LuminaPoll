@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <application
+        android:name=".LuminaPollApp"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@drawable/lumina_poll_logo"
+        android:label="@string/app_name"
+        android:roundIcon="@drawable/lumina_poll_logo"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.LuminaPoll"
+        android:windowSoftInputMode="adjustResize"
+        android:usesCleartextTraffic="true">
+        
+        <activity
+            android:name=".features.splash.SplashActivity"
+            android:exported="true"
+            android:theme="@style/Theme.LuminaPoll.Splash">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="luminapoll.firebaseapp.com"
+                    android:pathPrefix="/__/auth" />
+                <data
+                    android:scheme="http"
+                    android:host="luminapoll.firebaseapp.com"
+                    android:pathPrefix="/__/auth" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".features.splash.MainActivity"
+            android:exported="false"
+            android:label="@string/app_name"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".features.dashboard.HomeActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".features.dashboard.DashboardActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".features.local.ScanPollsActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".features.auth.LoginActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".features.auth.RegisterActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".features.auth.ForgotPasswordActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".features.auth.NewPasswordActivity"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".features.poll.CreatePollActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".features.poll.PollCodeActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".features.poll.EnterCodeActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".features.poll.VoteActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".features.poll.LivePollActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+    </application>
+
+</manifest>

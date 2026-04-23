@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base application theme. -->
+    <style name="Theme.LuminaPoll" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primary_background</item>
+        <item name="android:statusBarColor">@color/primary_background</item>
+    </style>
+
+    <!-- Splash screen theme. We customize it to have NO icon to 'skip' the icon-only phase. -->
+    <style name="Theme.LuminaPoll.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/primary_background</item>
+        <!-- Setting the icon to a transparent/blank drawable helps 'skip' the visual icon phase. -->
+        <item name="windowSplashScreenAnimatedIcon">@android:color/transparent</item>
+        <item name="postSplashScreenTheme">@style/Theme.LuminaPoll</item>
+    </style>
+</resources>

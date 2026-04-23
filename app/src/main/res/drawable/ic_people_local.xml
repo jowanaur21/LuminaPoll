@@ -1,0 +1,37 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="80dp"
+    android:height="80dp"
+    android:viewportWidth="80"
+    android:viewportHeight="80">
+
+    <!-- Left Person -->
+    <!-- Left half head -->
+    <path android:fillColor="#A0C9FF" android:pathData="M 24,22 A 11,11 0 0,0 24,44 Z" />
+    <!-- Right half head -->
+    <path android:fillColor="#75ACFF" android:pathData="M 24,22 A 11,11 0 0,1 24,44 Z" />
+    <!-- Left half body -->
+    <path android:fillColor="#A0C9FF" android:pathData="M 24,48 C 12,48 6,58 6,70 H 24 Z" />
+    <!-- Right half body -->
+    <path android:fillColor="#75ACFF" android:pathData="M 24,48 C 36,48 42,58 42,70 H 24 Z" />
+
+    <!-- Right Person -->
+    <!-- Left half head -->
+    <path android:fillColor="#A0C9FF" android:pathData="M 56,22 A 11,11 0 0,0 56,44 Z" />
+    <!-- Right half head -->
+    <path android:fillColor="#75ACFF" android:pathData="M 56,22 A 11,11 0 0,1 56,44 Z" />
+    <!-- Left half body -->
+    <path android:fillColor="#A0C9FF" android:pathData="M 56,48 C 44,48 38,58 38,70 H 56 Z" />
+    <!-- Right half body -->
+    <path android:fillColor="#75ACFF" android:pathData="M 56,48 C 68,48 74,58 74,70 H 56 Z" />
+
+    <!-- Center Person -->
+    <!-- Left half head -->
+    <path android:fillColor="#005ECC" android:pathData="M 40,14 A 14,14 0 0,0 40,42 Z" />
+    <!-- Right half head -->
+    <path android:fillColor="#004599" android:pathData="M 40,14 A 14,14 0 0,1 40,42 Z" />
+    <!-- Left half body -->
+    <path android:fillColor="#005ECC" android:pathData="M 40,46 C 24,46 16,60 16,70 H 40 Z" />
+    <!-- Right half body -->
+    <path android:fillColor="#004599" android:pathData="M 40,46 C 56,46 64,60 64,70 H 40 Z" />
+
+</vector>
