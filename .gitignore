@@ -30,3 +30,18 @@ Thumbs.db
 # Misc
 *.log
 captures/
+
+# Private/Secret files
+google-services.json
+app/google-services.json
+*.jks
+*.keystore
+secrets.xml
+.env
+.env.*
+
+# Local configuration
+/local.properties
+gradle.properties
+# Note: gradle.properties is sometimes tracked, but if it contains 
+# local environment paths or secrets, it should be ignored.
