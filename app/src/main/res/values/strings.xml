@@ -17,7 +17,6 @@
     <string name="online_dashboard_title">Online Dashboard</string>
     <string name="local_dashboard_subtitle">Choose an action</string>
     <string name="online_dashboard_subtitle">Explore polls worldwide</string>
-    <string name="join_poll_title">Join Poll</string>
     <string name="join_poll_desc">Join poll, participate\nand vote in active poll</string>
     <string name="host_poll_title">Host Poll</string>
     <string name="host_poll_desc">Create and host\na poll</string>
