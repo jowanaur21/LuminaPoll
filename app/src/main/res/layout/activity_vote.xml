@@ -22,7 +22,7 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:padding="12dp"
-            android:src="@drawable/ic_back"
+            android:src="@drawable/back_arrow"
             tools:ignore="ContentDescription" />
 
         <TextView
