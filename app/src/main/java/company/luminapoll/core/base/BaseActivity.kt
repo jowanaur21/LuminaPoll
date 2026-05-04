@@ -8,6 +8,8 @@ import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import company.luminapoll.R
 import company.luminapoll.core.utils.KeyboardUtil
 
@@ -18,13 +20,15 @@ import company.luminapoll.core.utils.KeyboardUtil
 abstract class BaseActivity : AppCompatActivity() {
 
     protected var mode: String = "LOCAL"
+    protected var role: String = "JOINER"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         
-        // Extract mode from intent if present
+        // Extract mode and role from intent if present
         mode = intent.getStringExtra("EXTRA_MODE") ?: "LOCAL"
+        role = intent.getStringExtra("EXTRA_ROLE") ?: "JOINER"
     }
 
     override fun setContentView(layoutResID: Int) {
@@ -44,9 +48,19 @@ abstract class BaseActivity : AppCompatActivity() {
     }
 
     /**
-     * Applies the theme based on the current mode.
-     * LOCAL: Blue theme
-     * ONLINE: Purple theme
+     * Helper to apply system bar insets to a specific view.
+     * This avoids double padding on API 35+ where edge-to-edge is forced.
+     */
+    protected fun consumeSystemBars(view: View) {
+        ViewCompat.setOnApplyWindowInsetsListener(view) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
+    }
+
+    /**
+     * Applies UI theme based on Role and Mode according to design specs.
      */
     protected fun applyModeTheme(
         rootLayout: View? = null,
@@ -56,39 +70,48 @@ abstract class BaseActivity : AppCompatActivity() {
         accentIcons: List<ImageView>? = null,
         accentButtons: List<Button>? = null
     ) {
-        val (bgColor, primaryColor, secondaryColor) = if (mode == "ONLINE") {
-            Triple(R.color.login_bg, R.color.card_purple, R.color.white)
-        } else {
-            Triple(R.color.local_dashboard_bg, R.color.card_blue, R.color.white)
-        }
-
-        // Only set background if provided and it's not a FrameLayout with a custom background view
-        rootLayout?.let {
-            if (it.background == null || mode == "ONLINE") {
-                 it.setBackgroundColor(ContextCompat.getColor(this, bgColor))
+        val (bgColor, primaryColor) = when {
+            // Dashboard screens (Home/Dashboard)
+            intent.getBooleanExtra("IS_DASHBOARD", false) -> {
+                R.color.color_v75 to R.color.color_v300
+            }
+            // Host Flow
+            role == "HOST" -> {
+                R.color.color_p75 to R.color.color_p300
+            }
+            // Joiner Flow - Mode Specific
+            mode == "ONLINE" -> {
+                R.color.color_d75 to R.color.color_d300
+            }
+            else -> { // LOCAL JOINER
+                R.color.color_l75 to R.color.color_l200
             }
         }
+
+        rootLayout?.setBackgroundColor(ContextCompat.getColor(this, bgColor))
         
+        val primaryColorVal = ContextCompat.getColor(this, primaryColor)
+
         primaryButtons?.forEach { button ->
-            button.backgroundTintList = ContextCompat.getColorStateList(this, primaryColor)
+            button.backgroundTintList = android.content.res.ColorStateList.valueOf(primaryColorVal)
             button.setTextColor(ContextCompat.getColor(this, R.color.white))
         }
 
         secondaryButtons?.forEach { button ->
-            button.backgroundTintList = ContextCompat.getColorStateList(this, secondaryColor)
-            button.setTextColor(ContextCompat.getColor(this, primaryColor))
+            button.backgroundTintList = android.content.res.ColorStateList.valueOf(ContextCompat.getColor(this, R.color.white))
+            button.setTextColor(primaryColorVal)
         }
 
         accentTexts?.forEach { textView ->
-            textView.setTextColor(ContextCompat.getColor(this, primaryColor))
+            textView.setTextColor(primaryColorVal)
         }
 
         accentIcons?.forEach { imageView ->
-            imageView.imageTintList = ContextCompat.getColorStateList(this, primaryColor)
+            imageView.imageTintList = android.content.res.ColorStateList.valueOf(primaryColorVal)
         }
 
         accentButtons?.forEach { button ->
-            button.backgroundTintList = ContextCompat.getColorStateList(this, primaryColor)
+            button.backgroundTintList = android.content.res.ColorStateList.valueOf(primaryColorVal)
         }
     }
 

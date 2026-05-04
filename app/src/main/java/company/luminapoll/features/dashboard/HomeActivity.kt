@@ -11,11 +11,18 @@ import company.luminapoll.features.auth.LoginActivity
 class HomeActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_home)
+        setContentView(R.layout.dashboard_activity_home)
+        
+        findViewById<android.view.View>(R.id.main)?.let { consumeSystemBars(it) }
+        
+        applyModeTheme(
+            rootLayout = findViewById(R.id.main)
+        )
 
         findViewById<CardView>(R.id.mode_local).setOnClickListener {
             val intent = Intent(this, DashboardActivity::class.java).apply {
                 putExtra("EXTRA_MODE", "LOCAL")
+                putExtra("IS_DASHBOARD", true)
             }
             startActivity(intent)
         }
@@ -26,6 +33,7 @@ class HomeActivity : BaseActivity() {
             } else {
                 val intent = Intent(this, DashboardActivity::class.java).apply {
                     putExtra("EXTRA_MODE", "ONLINE")
+                    putExtra("IS_DASHBOARD", true)
                 }
                 startActivity(intent)
             }

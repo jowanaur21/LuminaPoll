@@ -10,12 +10,12 @@ enum class PollStatus {
 @Serializable
 data class Poll(
     val id: String,
-    val title: String, // Explicit poll name
-    val code: String, // 4-char alphanumeric code
+    val title: String,
+    val code: String,
     val question: String,
     val options: List<PollOption>,
     val hostIp: String,
-    val hostId: String = "", // Added to identify the host
+    val hostId: String = "",
     val hostName: String = "Unknown Host",
     val port: Int = 8080,
     var participantCount: Int = 0,

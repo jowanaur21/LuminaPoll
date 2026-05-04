@@ -25,7 +25,7 @@ class EnterCodeActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_enter_code)
+        setContentView(R.layout.poll_activity_enter_code)
 
         initViews()
         setupModeUI()
@@ -145,6 +145,7 @@ class EnterCodeActivity : BaseActivity() {
     private fun navigateToVote() {
         val intent = Intent(this, VoteActivity::class.java).apply {
             putExtra("EXTRA_MODE", mode)
+            putExtra("EXTRA_ROLE", role)
         }
         startActivity(intent)
         finish()

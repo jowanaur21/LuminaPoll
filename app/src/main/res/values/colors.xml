@@ -1,33 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary_background">#6cb1e8</color>
+    <color name="color_l75">#96C0FF</color>
+    <color name="color_l200">#2B7FFF</color>
+    <color name="color_d75">#AFC3DB</color>
+    <color name="color_d300">#3D6DA6</color>
+    <color name="color_v75">#C696EA</color>
+    <color name="color_v300">#7400CC</color>
+    <color name="color_p75">#D1B3CD</color>
+    <color name="color_p300">#8E4585</color>
+
+    <!-- Standard App Colors -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="text_primary">#000000</color>
-    <color name="header_text_secondary">#222222</color>
-    <color name="input_background">#D9D9D9</color>
-    <color name="button_color">#000000</color>
-    <color name="google_btn_bg">#D9D9D9</color>
-    <color name="local_mode_bg">#4A90E2</color>
-    <color name="online_mode_bg">#7B00D3</color>
-    <color name="text_muted">#555555</color>
-    <color name="text_description">#E0E0E0</color>
-    <color name="local_dashboard_bg">#CFDFF4</color>
-    <color name="card_blue">#4C95E2</color>
-    <color name="card_purple">#7B00D3</color>
-    <color name="dark_bg">#E1ECF4</color>
-    <color name="btn_cancel_text">#4C95E2</color>
-    <color name="btn_code_bg">#4C95E2</color>
-    <color name="online_dashboard_bg">#E3D3F6</color>
-    <color name="login_bg">#E8D9F6</color>
-    <color name="login_btn">#6A0DAD</color>
-    <color name="forgot_password">#6A0DAD</color>
+    <color name="text_primary">#1A1A1A</color>
+    <color name="text_secondary">#444444</color>
+    <color name="input_background">#FFFFFF</color>
+    <color name="primary_purple">@color/color_v300</color>
+    <color name="primary_blue">@color/color_l200</color>
     
-    <!-- Password Strength Colors -->
+    <!-- Poll Result Colors -->
+    <color name="result_green">#2BB11D</color>
+    <color name="result_yellow">#F8D835</color>
+    <color name="result_blue">#3179D7</color>
+    <color name="result_red">#F85935</color>
+    <color name="result_bar_bg">#D9D9D9</color>
+    <color name="stop_red">#F85935</color>
+
+    <!-- UI Component Logic Mappings -->
+    <color name="login_btn">@color/color_v300</color>
+    <color name="login_bg">@color/color_v75</color>
+    <color name="dashboard_purple_bg">@color/color_v75</color>
+    <color name="dashboard_blue_bg">@color/color_l75</color>
+    <color name="header_text_secondary">@color/text_secondary</color>
+    <color name="forgot_password">@color/color_v300</color>
+    <color name="text_muted">#888888</color>
+    <color name="card_blue">@color/color_l200</color>
+    <color name="card_purple">@color/color_v300</color>
+    <color name="online_purple_light">@color/color_v75</color>
+    <color name="local_blue_light">@color/color_l75</color>
+    <color name="local_mode_primary">@color/color_l200</color>
+    <color name="online_mode_primary">@color/color_v300</color>
+
+    <!-- Password Strength -->
     <color name="strength_very_weak">#FF4B4B</color>
     <color name="strength_weak">#FF9800</color>
     <color name="strength_fair">#FFC107</color>
     <color name="strength_good">#4CAF50</color>
-    <color name="strength_strong">#6A0DAD</color>
-    <color name="strength_default">#CCCCCC</color>
+    <color name="strength_strong">#7400CC</color>
+    <color name="strength_default">#E0E0E0</color>
 </resources>

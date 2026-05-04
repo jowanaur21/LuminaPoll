@@ -2,9 +2,10 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/login_bg"
+    android:background="@color/color_l75"
     android:fillViewport="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -29,7 +30,7 @@
             android:id="@+id/tv_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Generate Code"
+            android:text="Poll Results"
             android:textColor="@color/black"
             android:textSize="28sp"
             android:textStyle="bold"
@@ -39,73 +40,76 @@
             app:layout_constraintTop_toTopOf="@id/btn_back" />
 
         <TextView
-            android:id="@+id/tv_share_desc"
-            android:layout_width="wrap_content"
+            android:id="@+id/tv_poll_title"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="64dp"
+            android:layout_marginTop="32dp"
             android:gravity="center"
-            android:text="Share this code with\nparticipants"
             android:textColor="@color/black"
             android:textSize="22sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_title" />
+            app:layout_constraintTop_toBottomOf="@id/tv_title"
+            tools:text="Programming Languages Poll" />
 
-        <FrameLayout
-            android:id="@+id/fl_code_container"
+        <TextView
+            android:id="@+id/tv_total_votes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/text_secondary"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_poll_title"
+            tools:text="Total Votes: 124" />
+
+        <LinearLayout
+            android:id="@+id/ll_results_container"
             android:layout_width="0dp"
-            android:layout_height="120dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="48dp"
-            android:background="@drawable/bg_edittext"
-            android:elevation="4dp"
+            android:orientation="vertical"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_share_desc">
-
-            <TextView
-                android:id="@+id/tv_poll_code"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="1A2B"
-                android:textColor="@color/login_btn"
-                android:textSize="64sp"
-                android:textStyle="bold" />
-        </FrameLayout>
+            app:layout_constraintTop_toBottomOf="@id/tv_total_votes">
+            
+            <!-- Dynamic results items using item_live_result.xml -->
+            
+        </LinearLayout>
 
         <Button
-            android:id="@+id/btn_copy"
+            android:id="@+id/btn_share"
             android:layout_width="0dp"
-            android:layout_height="72dp"
-            android:layout_marginTop="80dp"
+            android:layout_height="64dp"
+            android:layout_marginTop="48dp"
             android:background="@drawable/bg_button"
-            android:text="Copy Code"
-            android:textAllCaps="false"
-            android:textColor="@color/login_btn"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            app:backgroundTint="@color/white"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/fl_code_container"
-            tools:ignore="ButtonStyle" />
-
-        <Button
-            android:id="@+id/btn_dashboard"
-            android:layout_width="0dp"
-            android:layout_height="72dp"
-            android:layout_marginTop="24dp"
-            android:background="@drawable/bg_button"
-            android:text="@string/btn_view_results"
+            android:text="Share Results"
             android:textAllCaps="false"
             android:textColor="@color/white"
-            android:textSize="20sp"
+            android:textSize="18sp"
             android:textStyle="bold"
             app:backgroundTint="@color/login_btn"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/btn_copy" />
+            app:layout_constraintTop_toBottomOf="@id/ll_results_container" />
+
+        <Button
+            android:id="@+id/btn_dashboard"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_button"
+            android:text="Back to Dashboard"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:backgroundTint="@color/text_secondary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_share" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

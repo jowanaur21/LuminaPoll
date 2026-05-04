@@ -10,7 +10,9 @@ import company.luminapoll.features.dashboard.HomeActivity
 class MainActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.splash_activity_main)
+        
+        findViewById<View>(R.id.main)?.let { consumeSystemBars(it) }
 
         val startView: View = findViewById(R.id.start_view)
         startView.setOnClickListener {

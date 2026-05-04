@@ -93,7 +93,7 @@
             android:layout_height="40dp"
             android:background="@drawable/bg_button"
             android:minWidth="80dp"
-            android:text="Join"
+            android:text="@string/join_button"
             android:textAllCaps="false"
             android:textColor="@color/white"
             android:textStyle="bold"

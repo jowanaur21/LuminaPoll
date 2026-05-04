@@ -99,10 +99,10 @@ class KtorLocalClient {
     }
 
     fun disconnect() {
+        connectionJob?.cancel()
         scope.launch {
             session?.close()
-            client.close()
-            scope.cancel()
+            session = null
         }
     }
 }

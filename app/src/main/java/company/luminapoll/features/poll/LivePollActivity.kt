@@ -1,5 +1,6 @@
 package company.luminapoll.features.poll
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -32,7 +33,7 @@ class LivePollActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_live_poll)
+        setContentView(R.layout.poll_activity_live)
 
         initViews()
         
@@ -97,11 +98,25 @@ class LivePollActivity : BaseActivity() {
             flow.collectLatest { poll ->
                 poll?.let { 
                     currentPoll = it
+                    if (it.status == PollStatus.ENDED) {
+                        navigateToResults(it)
+                        return@collectLatest
+                    }
                     updateUI(it)
                     startTimer(it.endTimeMillis, it.status)
                 }
             }
         }
+    }
+
+    private fun navigateToResults(poll: Poll) {
+        val intent = Intent(this, PollResultActivity::class.java).apply {
+            val pollJson = (application as LuminaPollApp).localServer.serializePoll(poll)
+            putExtra("EXTRA_POLL_JSON", pollJson)
+            putExtra("EXTRA_MODE", mode)
+        }
+        startActivity(intent)
+        finish()
     }
 
     private fun startTimer(endTimeMillis: Long, status: PollStatus) {
@@ -145,22 +160,29 @@ class LivePollActivity : BaseActivity() {
         
         val totalVotes = poll.options.sumOf { it.votes }
 
+        val resultColors = listOf(
+            R.color.result_green,
+            R.color.result_blue,
+            R.color.result_yellow,
+            R.color.result_red
+        )
+
         if (llResultsContainer.childCount != poll.options.size) {
             llResultsContainer.removeAllViews()
-            poll.options.forEach { option ->
-                val resultView = LayoutInflater.from(this).inflate(R.layout.item_live_result, llResultsContainer, false)
-                updateResultItem(resultView, option, totalVotes)
+            poll.options.forEachIndexed { index, option ->
+                val resultView = LayoutInflater.from(this).inflate(R.layout.poll_item_live_result, llResultsContainer, false)
+                updateResultItem(resultView, option, totalVotes, resultColors[index % resultColors.size])
                 llResultsContainer.addView(resultView)
             }
         } else {
             poll.options.forEachIndexed { index, option ->
                 val resultView = llResultsContainer.getChildAt(index)
-                updateResultItem(resultView, option, totalVotes)
+                updateResultItem(resultView, option, totalVotes, resultColors[index % resultColors.size])
             }
         }
     }
 
-    private fun updateResultItem(view: View, option: company.luminapoll.core.network.PollOption, totalVotes: Int) {
+    private fun updateResultItem(view: View, option: company.luminapoll.core.network.PollOption, totalVotes: Int, colorRes: Int) {
         val tvName = view.findViewById<TextView>(R.id.tv_option_name)
         val progressBar = view.findViewById<ProgressBar>(R.id.pb_votes)
         val tvStats = view.findViewById<TextView>(R.id.tv_vote_stats)
@@ -170,8 +192,7 @@ class LivePollActivity : BaseActivity() {
         val percentage = if (totalVotes > 0) (option.votes.toFloat() / totalVotes * 100).toInt() else 0
         progressBar.progress = percentage
         
-        val tintColor = if (mode == "ONLINE") R.color.login_btn else R.color.card_blue
-        progressBar.progressTintList = androidx.core.content.ContextCompat.getColorStateList(this, tintColor)
+        progressBar.progressTintList = androidx.core.content.ContextCompat.getColorStateList(this, colorRes)
         
         tvStats.text = "$percentage% (${option.votes})"
     }

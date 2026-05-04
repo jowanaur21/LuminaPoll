@@ -29,7 +29,7 @@ class LoginActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login)
+        setContentView(R.layout.auth_activity_login)
 
         auth = FirebaseAuth.getInstance()
         credentialManager = CredentialManager.create(this)
@@ -41,8 +41,10 @@ class LoginActivity : BaseActivity() {
         val btnGoogle = findViewById<View>(R.id.btn_google_login)
         val btnBack = findViewById<ImageView>(R.id.btn_back)
 
-        // Auth screens are always ONLINE theme (Purple)
+        // Auth screens have Lavender background (V75)
+        intent.putExtra("IS_DASHBOARD", true)
         applyModeTheme(
+            rootLayout = findViewById(R.id.main),
             primaryButtons = listOf(btnLogin),
             accentIcons = listOf(btnBack)
         )

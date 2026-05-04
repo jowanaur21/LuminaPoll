@@ -2,9 +2,10 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#E1ECF4"
+    android:background="@color/dashboard_blue_bg"
     android:fillViewport="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -29,7 +30,7 @@
             android:id="@+id/tv_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Live Poll View"
+            android:text="Generate Code"
             android:textColor="@color/black"
             android:textSize="28sp"
             android:textStyle="bold"
@@ -38,110 +39,74 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@id/btn_back" />
 
-        <ImageView
-            android:id="@+id/iv_live"
-            android:layout_width="64dp"
-            android:layout_height="32dp"
-            android:layout_marginTop="32dp"
-            android:src="@drawable/ic_live_badge"
+        <TextView
+            android:id="@+id/tv_share_desc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="64dp"
+            android:gravity="center"
+            android:text="Share this code with\nparticipants"
+            android:textColor="@color/black"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_title" />
 
-        <LinearLayout
-            android:id="@+id/ll_participants"
-            android:layout_width="wrap_content"
-            android:layout_height="32dp"
-            android:background="@drawable/bg_edittext"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingHorizontal="12dp"
-            app:layout_constraintBottom_toBottomOf="@id/iv_live"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/iv_live">
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_participants" />
-
-            <TextView
-                android:id="@+id/tv_participant_count"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:text="25"
-                android:textColor="@color/black"
-                android:textStyle="bold" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/ll_results_container"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="64dp"
-            android:orientation="vertical"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/iv_live">
-            
-            <!-- Dynamic results items here -->
-            
-        </LinearLayout>
-
         <FrameLayout
-            android:id="@+id/fl_timer"
+            android:id="@+id/fl_code_container"
             android:layout_width="0dp"
-            android:layout_height="72dp"
-            android:layout_marginTop="64dp"
+            android:layout_height="120dp"
+            android:layout_marginTop="48dp"
             android:background="@drawable/bg_edittext"
+            android:elevation="4dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/ll_results_container">
+            app:layout_constraintTop_toBottomOf="@id/tv_share_desc">
 
             <TextView
-                android:id="@+id/tv_timer"
+                android:id="@+id/tv_poll_code"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="Poll ends in 02:30"
-                android:textColor="@color/black"
-                android:textSize="20sp"
+                android:text="1A2B"
+                android:textColor="@color/primary_purple"
+                android:textSize="64sp"
                 android:textStyle="bold" />
         </FrameLayout>
 
         <Button
-            android:id="@+id/btn_stop_poll"
+            android:id="@+id/btn_copy"
+            android:layout_width="0dp"
+            android:layout_height="72dp"
+            android:layout_marginTop="80dp"
+            android:background="@drawable/bg_button"
+            android:text="Copy Code"
+            android:textAllCaps="false"
+            android:textColor="@color/primary_purple"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:backgroundTint="@color/white"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/fl_code_container"
+            tools:ignore="ButtonStyle" />
+
+        <Button
+            android:id="@+id/btn_dashboard"
             android:layout_width="0dp"
             android:layout_height="72dp"
             android:layout_marginTop="24dp"
             android:background="@drawable/bg_button"
-            android:text="@string/stop_poll"
+            android:text="@string/btn_view_results"
             android:textAllCaps="false"
             android:textColor="@color/white"
             android:textSize="20sp"
             android:textStyle="bold"
-            android:visibility="gone"
-            app:backgroundTint="#FF5252"
+            app:backgroundTint="@color/primary_purple"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/fl_timer"
-            tools:visibility="visible" />
-
-        <Button
-            android:id="@+id/btn_back_dashboard"
-            android:layout_width="0dp"
-            android:layout_height="72dp"
-            android:layout_marginTop="16dp"
-            android:background="@drawable/bg_button"
-            android:text="Back to Dashboard"
-            android:textAllCaps="false"
-            android:textColor="@color/white"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            app:backgroundTint="@color/card_blue"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/btn_stop_poll" />
+            app:layout_constraintTop_toBottomOf="@id/btn_copy" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

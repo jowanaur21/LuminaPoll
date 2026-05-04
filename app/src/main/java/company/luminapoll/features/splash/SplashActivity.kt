@@ -14,7 +14,7 @@ class SplashActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
-        setContentView(company.luminapoll.R.layout.activity_splash)
+        setContentView(company.luminapoll.R.layout.splash_activity_splash)
 
         // Check for deep link before regular transition
         val data = intent.data

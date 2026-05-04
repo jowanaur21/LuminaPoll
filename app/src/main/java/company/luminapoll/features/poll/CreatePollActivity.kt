@@ -15,6 +15,7 @@ import company.luminapoll.LuminaPollApp
 import company.luminapoll.R
 import company.luminapoll.core.base.BaseActivity
 import company.luminapoll.core.network.Poll
+import company.luminapoll.core.network.PollForegroundService
 import company.luminapoll.core.network.PollOption
 import company.luminapoll.core.utils.DeviceIdProvider
 import company.luminapoll.core.utils.NetworkUtils
@@ -31,7 +32,7 @@ class CreatePollActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_create_poll)
+        setContentView(R.layout.poll_activity_create)
 
         initViews()
         
@@ -70,7 +71,7 @@ class CreatePollActivity : BaseActivity() {
     }
 
     private fun addOption() {
-        val optionView = LayoutInflater.from(this).inflate(R.layout.item_poll_option, llOptionsContainer, false)
+        val optionView = LayoutInflater.from(this).inflate(R.layout.poll_item_option, llOptionsContainer, false)
         val etOption = optionView.findViewById<EditText>(R.id.et_option)
         val btnRemove = optionView.findViewById<ImageView>(R.id.btn_remove_option)
 
@@ -150,11 +151,10 @@ class CreatePollActivity : BaseActivity() {
                 durationMinutes = durationMinutes,
                 endTimeMillis = endTimeMillis
             )
-            
-            (application as LuminaPollApp).localServer.start(poll)
+
+            startPollService(poll)
             navigateToCodeScreen(code)
-        } else {
-            val code = (('A'..'Z') + ('0'..'9')).shuffled().take(6).joinToString("")
+        } else {            val code = (('A'..'Z') + ('0'..'9')).shuffled().take(6).joinToString("")
             val poll = Poll(
                 id = UUID.randomUUID().toString(),
                 title = name,
@@ -180,9 +180,23 @@ class CreatePollActivity : BaseActivity() {
         }
     }
 
+    private fun startPollService(poll: Poll) {
+        val pollJson = (application as LuminaPollApp).localServer.serializePoll(poll)
+        val serviceIntent = Intent(this, PollForegroundService::class.java).apply {
+            action = PollForegroundService.ACTION_START
+            putExtra(PollForegroundService.EXTRA_POLL_JSON, pollJson)
+        }
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent)
+        } else {
+            startService(serviceIntent)
+        }
+    }
+
     private fun navigateToCodeScreen(code: String) {
         val intent = Intent(this, PollCodeActivity::class.java).apply {
             putExtra("EXTRA_MODE", mode)
+            putExtra("EXTRA_ROLE", role)
             putExtra("EXTRA_POLL_CODE", code)
         }
         startActivity(intent)

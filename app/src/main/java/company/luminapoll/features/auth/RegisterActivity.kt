@@ -18,7 +18,7 @@ class RegisterActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_register)
+        setContentView(R.layout.auth_activity_register)
 
         auth = FirebaseAuth.getInstance()
 
@@ -30,8 +30,10 @@ class RegisterActivity : BaseActivity() {
         val btnRegister = findViewById<Button>(R.id.btn_register)
         val btnBack = findViewById<ImageView>(R.id.btn_back)
 
-        // Auth screens are always ONLINE theme (Purple)
+        // Auth screens have Lavender background (V75)
+        intent.putExtra("IS_DASHBOARD", true)
         applyModeTheme(
+            rootLayout = findViewById(R.id.main),
             primaryButtons = listOf(btnRegister),
             accentIcons = listOf(btnBack)
         )

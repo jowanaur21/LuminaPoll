@@ -31,7 +31,7 @@ class ScanPollsActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_scan_polls)
+        setContentView(R.layout.local_activity_scan)
 
         initViews()
         startRadarAnimation()
@@ -53,6 +53,7 @@ class ScanPollsActivity : BaseActivity() {
         val btnBack = findViewById<ImageView>(R.id.btn_back)
 
         applyModeTheme(
+            rootLayout = findViewById(R.id.root_layout),
             primaryButtons = listOf(btnEnterCode),
             accentIcons = listOf(btnBack)
         )
@@ -100,6 +101,7 @@ class ScanPollsActivity : BaseActivity() {
         (application as LuminaPollApp).localClient.connect(poll.hostIp, userName)
         val intent = Intent(this, VoteActivity::class.java).apply {
             putExtra("EXTRA_MODE", mode)
+            putExtra("EXTRA_ROLE", role)
         }
         startActivity(intent)
         finish()
@@ -125,7 +127,7 @@ class ScannedPollsAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_scanned_poll, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.local_item_scanned_poll, parent, false)
         return ViewHolder(view)
     }
 

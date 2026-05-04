@@ -17,7 +17,7 @@ class ForgotPasswordActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_forgot_password)
+        setContentView(R.layout.auth_activity_forgot_password)
 
         auth = FirebaseAuth.getInstance()
 
@@ -27,8 +27,12 @@ class ForgotPasswordActivity : BaseActivity() {
         val tvBackToLogin = findViewById<TextView>(R.id.tv_back_to_login)
         val progressOverlay = findViewById<android.view.View>(R.id.forgot_progress_overlay)
 
-        // Auth screens are always ONLINE theme (Purple)
+
+        // Lavender is color_v75. 
+        // I will set IS_DASHBOARD=true for auth to get V75, or just use role="DASHBOARD"
+        intent.putExtra("IS_DASHBOARD", true)
         applyModeTheme(
+            rootLayout = findViewById(R.id.main),
             primaryButtons = listOf(btnSend),
             accentIcons = listOf(btnBack)
         )

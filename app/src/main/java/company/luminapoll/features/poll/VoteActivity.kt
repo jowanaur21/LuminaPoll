@@ -31,12 +31,12 @@ class VoteActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_vote)
+        setContentView(R.layout.poll_activity_vote)
 
         initViews()
         
         applyModeTheme(
-            rootLayout = findViewById(R.id.root_layout),
+            rootLayout = findViewById(R.id.main),
             primaryButtons = listOf(btnSubmit),
             accentIcons = listOf(findViewById(R.id.btn_back))
         )
@@ -149,6 +149,7 @@ class VoteActivity : BaseActivity() {
         if (poll.hostId == currentUserId) {
             val intent = Intent(this, LivePollActivity::class.java).apply {
                 putExtra("EXTRA_MODE", mode)
+                putExtra("EXTRA_ROLE", role)
                 putExtra("EXTRA_POLL_CODE", poll.code)
             }
             startActivity(intent)
@@ -177,7 +178,7 @@ class VoteActivity : BaseActivity() {
         if (llOptionsContainer.childCount != poll.options.size) {
             llOptionsContainer.removeAllViews()
             poll.options.forEachIndexed { index, option ->
-                val optionView = LayoutInflater.from(this).inflate(R.layout.item_vote_option, llOptionsContainer, false)
+                val optionView = LayoutInflater.from(this).inflate(R.layout.poll_item_vote_option, llOptionsContainer, false)
                 val tvOptionText = optionView.findViewById<TextView>(R.id.tv_option_text)
                 tvOptionText.text = option.text
 

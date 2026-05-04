@@ -32,7 +32,7 @@ class NewPasswordActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_new_password)
+        setContentView(R.layout.auth_activity_new_password)
 
         auth = FirebaseAuth.getInstance()
         handleIntent(intent)
@@ -41,7 +41,7 @@ class NewPasswordActivity : BaseActivity() {
         val etConfirmPassword = findViewById<EditText>(R.id.et_confirm_password)
         val btnReset = findViewById<Button>(R.id.btn_reset)
         val btnBack = findViewById<ImageView>(R.id.btn_back)
-        val progressOverlay = findViewById<android.view.View>(R.id.new_password_progress_overlay)
+        val progressOverlay = findViewById<View>(R.id.new_password_progress_overlay)
 
         val ivCheckChars = findViewById<ImageView>(R.id.iv_check_chars)
         val ivCheckNumSym = findViewById<ImageView>(R.id.iv_check_num_sym)
@@ -56,8 +56,10 @@ class NewPasswordActivity : BaseActivity() {
             findViewById(R.id.v_strength_5)
         )
 
-        // Auth screens are always ONLINE theme (Purple)
+        // Auth screens have Lavender background (V75)
+        intent.putExtra("IS_DASHBOARD", true)
         applyModeTheme(
+            rootLayout = findViewById(R.id.main),
             primaryButtons = listOf(btnReset),
             accentIcons = listOf(btnBack)
         )
@@ -158,14 +160,16 @@ class NewPasswordActivity : BaseActivity() {
     }
 
     private fun updateStrengthUI(strength: Int) {
-        val (label, colorRes) = when (strength) {
-            0 -> "" to R.color.strength_default
-            1 -> "Very Weak" to R.color.strength_very_weak
-            2 -> "Weak" to R.color.strength_weak
-            3 -> "Fair" to R.color.strength_fair
-            4 -> "Good" to R.color.strength_good
-            5 -> "Strong" to R.color.strength_strong
-            else -> "Strong" to R.color.strength_strong
+        val label: String
+        val colorRes: Int
+        
+        when (strength) {
+            1 -> { label = "Very Weak"; colorRes = R.color.strength_very_weak }
+            2 -> { label = "Weak"; colorRes = R.color.strength_weak }
+            3 -> { label = "Fair"; colorRes = R.color.strength_fair }
+            4 -> { label = "Good"; colorRes = R.color.strength_good }
+            5 -> { label = "Strong"; colorRes = R.color.strength_strong }
+            else -> { label = ""; colorRes = R.color.strength_default }
         }
 
         tvStrengthLabel.text = label

@@ -71,7 +71,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/scan_subtitle"
         app:layout_constraintVertical_bias="1.0"
-        tools:listitem="@layout/item_scanned_poll" />
+        tools:listitem="@layout/local_item_scanned_poll" />
 
     <Button
         android:id="@+id/btn_enter_code"
