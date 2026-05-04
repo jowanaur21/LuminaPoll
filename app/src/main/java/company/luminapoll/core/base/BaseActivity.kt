@@ -23,12 +23,22 @@ abstract class BaseActivity : AppCompatActivity() {
     protected var role: String = "JOINER"
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
-        super.onCreate(savedInstanceState)
-        
         // Extract mode and role from intent if present
         mode = intent.getStringExtra("EXTRA_MODE") ?: "LOCAL"
         role = intent.getStringExtra("EXTRA_ROLE") ?: "JOINER"
+
+        // Apply theme based on mode and role
+        val themeRes = when {
+            intent.getBooleanExtra("IS_DASHBOARD", false) -> R.style.Theme_LuminaPoll_OnlineHost
+            mode == "ONLINE" && role == "HOST" -> R.style.Theme_LuminaPoll_OnlineHost
+            mode == "ONLINE" && role == "JOINER" -> R.style.Theme_LuminaPoll_OnlineJoin
+            mode == "LOCAL" && role == "HOST" -> R.style.Theme_LuminaPoll_LocalHost
+            else -> R.style.Theme_LuminaPoll_LocalJoin
+        }
+        setTheme(themeRes)
+
+        enableEdgeToEdge()
+        super.onCreate(savedInstanceState)
     }
 
     override fun setContentView(layoutResID: Int) {
@@ -61,6 +71,8 @@ abstract class BaseActivity : AppCompatActivity() {
 
     /**
      * Applies UI theme based on Role and Mode according to design specs.
+     * Most of this is now handled by XML themes, but this helper remains for 
+     * specific view updates that can't be easily themed (like background tints).
      */
     protected fun applyModeTheme(
         rootLayout: View? = null,
@@ -70,27 +82,12 @@ abstract class BaseActivity : AppCompatActivity() {
         accentIcons: List<ImageView>? = null,
         accentButtons: List<Button>? = null
     ) {
-        val (bgColor, primaryColor) = when {
-            // Dashboard screens (Home/Dashboard)
-            intent.getBooleanExtra("IS_DASHBOARD", false) -> {
-                R.color.color_v75 to R.color.color_v300
-            }
-            // Host Flow
-            role == "HOST" -> {
-                R.color.color_p75 to R.color.color_p300
-            }
-            // Joiner Flow - Mode Specific
-            mode == "ONLINE" -> {
-                R.color.color_d75 to R.color.color_d300
-            }
-            else -> { // LOCAL JOINER
-                R.color.color_l75 to R.color.color_l200
-            }
-        }
-
-        rootLayout?.setBackgroundColor(ContextCompat.getColor(this, bgColor))
+        // XML Theme handles background and primary colors via attributes.
+        // This method now ensures specific components follow the theme precisely.
         
-        val primaryColorVal = ContextCompat.getColor(this, primaryColor)
+        val typedValue = android.util.TypedValue()
+        theme.resolveAttribute(R.attr.colorModePrimary, typedValue, true)
+        val primaryColorVal = typedValue.data
 
         primaryButtons?.forEach { button ->
             button.backgroundTintList = android.content.res.ColorStateList.valueOf(primaryColorVal)

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Mode-based colors -->
+    <attr name="colorModeBackground" format="color" />
+    <attr name="colorModePrimary" format="color" />
+    <attr name="colorModeSecondary" format="color" />
+    <attr name="colorModeButtonText" format="color" />
+</resources>

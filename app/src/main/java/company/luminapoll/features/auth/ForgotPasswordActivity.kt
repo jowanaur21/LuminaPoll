@@ -1,6 +1,7 @@
 package company.luminapoll.features.auth
 
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
@@ -25,12 +26,9 @@ class ForgotPasswordActivity : BaseActivity() {
         val btnSend = findViewById<Button>(R.id.btn_send)
         val btnBack = findViewById<ImageView>(R.id.btn_back)
         val tvBackToLogin = findViewById<TextView>(R.id.tv_back_to_login)
-        val progressOverlay = findViewById<android.view.View>(R.id.forgot_progress_overlay)
+        val progressOverlay = findViewById<View>(R.id.forgot_progress_overlay)
 
-
-        // Lavender is color_v75. 
-        // I will set IS_DASHBOARD=true for auth to get V75, or just use role="DASHBOARD"
-        intent.putExtra("IS_DASHBOARD", true)
+        // Auth screens use IS_DASHBOARD theme
         applyModeTheme(
             rootLayout = findViewById(R.id.main),
             primaryButtons = listOf(btnSend),
@@ -59,10 +57,10 @@ class ForgotPasswordActivity : BaseActivity() {
                 .setAndroidPackageName("company.luminapoll", true, "29")
                 .build()
 
-            progressOverlay.visibility = android.view.View.VISIBLE
+            progressOverlay.visibility = View.VISIBLE
             auth.sendPasswordResetEmail(email, actionCodeSettings)
                 .addOnCompleteListener { task ->
-                    progressOverlay.visibility = android.view.View.GONE
+                    progressOverlay.visibility = View.GONE
                     if (task.isSuccessful) {
                         Toast.makeText(this, "Reset link sent! Please check your email.", Toast.LENGTH_LONG).show()
                         finish()

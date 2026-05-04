@@ -17,8 +17,6 @@ class NsdHelper(context: Context) {
             serviceName = "LuminaPoll_$pollCode"
             serviceType = SERVICE_TYPE
             setPort(port)
-            // Note: setAttribute is API 21+, but some versions might have issues.
-            // We use the service name as the primary identifier.
         }
 
         registrationListener = object : NsdManager.RegistrationListener {

@@ -18,6 +18,7 @@ class PollResultActivity : BaseActivity() {
 
     private lateinit var llResultsContainer: LinearLayout
     private lateinit var tvPollTitle: TextView
+    private lateinit var tvQuestion: TextView
     private lateinit var tvTotalVotes: TextView
     private var poll: Poll? = null
 
@@ -34,7 +35,6 @@ class PollResultActivity : BaseActivity() {
         
         applyModeTheme(
             rootLayout = findViewById(R.id.root_layout),
-            primaryButtons = listOf(findViewById(R.id.btn_share)),
             accentIcons = listOf(findViewById(R.id.btn_back))
         )
 
@@ -44,6 +44,7 @@ class PollResultActivity : BaseActivity() {
     private fun initViews() {
         llResultsContainer = findViewById(R.id.ll_results_container)
         tvPollTitle = findViewById(R.id.tv_poll_title)
+        tvQuestion = findViewById(R.id.tv_question)
         tvTotalVotes = findViewById(R.id.tv_total_votes)
 
         findViewById<ImageView>(R.id.btn_back).setOnClickListener {
@@ -54,14 +55,12 @@ class PollResultActivity : BaseActivity() {
             finish()
         }
 
-        findViewById<Button>(R.id.btn_share).setOnClickListener {
-            // Placeholder for share logic
-        }
     }
 
     private fun displayResults() {
         val currentPoll = poll ?: return
         tvPollTitle.text = currentPoll.title
+        tvQuestion.text = currentPoll.question
         
         val totalVotes = currentPoll.options.sumOf { it.votes }
         tvTotalVotes.text = "Total Votes: $totalVotes"

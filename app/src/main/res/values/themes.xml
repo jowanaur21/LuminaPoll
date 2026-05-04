@@ -2,9 +2,38 @@
 <resources>
     <!-- Base application theme. -->
     <style name="Theme.LuminaPoll" parent="Theme.AppCompat.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/primary_purple</item>
+        <item name="colorPrimary">?attr/colorModePrimary</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowBackground">?attr/colorModeBackground</item>
+        
+        <!-- Default attribute values -->
+        <item name="colorModeSecondary">@color/white</item>
+        <item name="colorModeButtonText">@color/white</item>
+    </style>
+
+    <!-- Online Host: V75 & V300 -->
+    <style name="Theme.LuminaPoll.OnlineHost">
+        <item name="colorModeBackground">@color/color_v75</item>
+        <item name="colorModePrimary">@color/color_v300</item>
+    </style>
+
+    <!-- Online Join: D75 & D300 -->
+    <style name="Theme.LuminaPoll.OnlineJoin">
+        <item name="colorModeBackground">@color/color_d75</item>
+        <item name="colorModePrimary">@color/color_d300</item>
+    </style>
+
+    <!-- Local Host: P75 & P300 -->
+    <style name="Theme.LuminaPoll.LocalHost">
+        <item name="colorModeBackground">@color/color_p75</item>
+        <item name="colorModePrimary">@color/color_p300</item>
+    </style>
+
+    <!-- Local Join: L75 & L200 -->
+    <style name="Theme.LuminaPoll.LocalJoin">
+        <item name="colorModeBackground">@color/color_l75</item>
+        <item name="colorModePrimary">@color/color_l200</item>
     </style>
 
     <!-- Splash screen theme. We customize it to have NO icon to 'skip' the icon-only phase. -->
@@ -12,6 +41,6 @@
         <item name="windowSplashScreenBackground">@color/primary_purple</item>
         <!-- Setting the icon to a transparent/blank drawable helps 'skip' the visual icon phase. -->
         <item name="windowSplashScreenAnimatedIcon">@android:color/transparent</item>
-        <item name="postSplashScreenTheme">@style/Theme.LuminaPoll</item>
+        <item name="postSplashScreenTheme">@style/Theme.LuminaPoll.OnlineHost</item>
     </style>
 </resources>

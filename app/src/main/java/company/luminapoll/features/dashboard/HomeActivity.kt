@@ -2,6 +2,7 @@ package company.luminapoll.features.dashboard
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import androidx.cardview.widget.CardView
 import com.google.firebase.auth.FirebaseAuth
 import company.luminapoll.R
@@ -10,14 +11,13 @@ import company.luminapoll.features.auth.LoginActivity
 
 class HomeActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        intent.putExtra("IS_DASHBOARD", true)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.dashboard_activity_home)
         
-        findViewById<android.view.View>(R.id.main)?.let { consumeSystemBars(it) }
+        findViewById<View>(R.id.main)?.let { consumeSystemBars(it) }
         
-        applyModeTheme(
-            rootLayout = findViewById(R.id.main)
-        )
+        applyModeTheme()
 
         findViewById<CardView>(R.id.mode_local).setOnClickListener {
             val intent = Intent(this, DashboardActivity::class.java).apply {
@@ -29,7 +29,10 @@ class HomeActivity : BaseActivity() {
 
         findViewById<CardView>(R.id.mode_online).setOnClickListener {
             if (FirebaseAuth.getInstance().currentUser == null) {
-                startActivity(Intent(this, LoginActivity::class.java))
+                val intent = Intent(this, LoginActivity::class.java).apply {
+                    putExtra("IS_DASHBOARD", true)
+                }
+                startActivity(intent)
             } else {
                 val intent = Intent(this, DashboardActivity::class.java).apply {
                     putExtra("EXTRA_MODE", "ONLINE")

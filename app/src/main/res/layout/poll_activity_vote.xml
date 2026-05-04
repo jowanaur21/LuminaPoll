@@ -5,7 +5,7 @@
     android:id="@+id/vote_scroll_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#E1ECF4"
+    android:background="?attr/colorModeBackground"
     android:fillViewport="true">
 
     <LinearLayout
@@ -23,6 +23,7 @@
             android:layout_height="48dp"
             android:padding="12dp"
             android:src="@drawable/back_arrow"
+            app:tint="?attr/colorModePrimary"
             tools:ignore="ContentDescription" />
 
         <TextView
@@ -83,7 +84,7 @@
             android:textColor="@color/white"
             android:textSize="20sp"
             android:textStyle="bold"
-            app:backgroundTint="@color/card_blue" />
+            app:backgroundTint="?attr/colorModePrimary" />
 
     </LinearLayout>
 </ScrollView>

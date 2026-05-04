@@ -41,7 +41,7 @@ class PollCodeActivity : BaseActivity() {
 
         val btnDashboard = findViewById<Button>(R.id.btn_dashboard)
         val btnCopy = findViewById<Button>(R.id.btn_copy)
-        val btnBack = findViewById<android.view.View>(R.id.btn_back)
+        val btnBack = findViewById<View>(R.id.btn_back)
 
         applyModeTheme(
             rootLayout = findViewById(R.id.root_layout),
@@ -69,7 +69,8 @@ class PollCodeActivity : BaseActivity() {
                 }
                 startActivity(intent)
             } else {
-                // For online mode, the onlinePollManager already has the state if it was just created
+                // Start observing the online poll as host
+                (application as LuminaPollApp).onlinePollManager.startObserving(pollCode)
                 val intent = Intent(this, LivePollActivity::class.java).apply {
                     putExtra("EXTRA_MODE", mode)
                     putExtra("EXTRA_POLL_CODE", pollCode)

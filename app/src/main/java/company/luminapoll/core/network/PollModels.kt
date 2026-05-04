@@ -23,8 +23,19 @@ data class Poll(
     var maxParticipants: Int = 50,
     var durationMinutes: Int = 5,
     var endTimeMillis: Long = 0,
-    val votedUserIds: MutableSet<String> = mutableSetOf()
-)
+    var resultExpiryMillis: Long = 0,
+    val votedUserIds: MutableSet<String> = mutableSetOf(),
+    val isOnline: Boolean = false
+) {
+    companion object {
+        const val EXPIRY_LOCAL_MS = 60 * 60 * 1000L // 1 hour
+        const val EXPIRY_ONLINE_MS = 24 * 60 * 60 * 1000L // 24 hours
+    }
+
+    fun calculateResultExpiry(currentTime: Long): Long {
+        return currentTime + if (isOnline) EXPIRY_ONLINE_MS else EXPIRY_LOCAL_MS
+    }
+}
 
 @Serializable
 data class PollOption(

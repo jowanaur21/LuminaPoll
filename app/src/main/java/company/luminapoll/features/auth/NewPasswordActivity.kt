@@ -56,8 +56,7 @@ class NewPasswordActivity : BaseActivity() {
             findViewById(R.id.v_strength_5)
         )
 
-        // Auth screens have Lavender background (V75)
-        intent.putExtra("IS_DASHBOARD", true)
+        // Auth screens use IS_DASHBOARD theme
         applyModeTheme(
             rootLayout = findViewById(R.id.main),
             primaryButtons = listOf(btnReset),

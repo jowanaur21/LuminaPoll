@@ -3,11 +3,13 @@ package company.luminapoll.features.poll
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.children
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.auth.FirebaseAuth
@@ -15,7 +17,7 @@ import company.luminapoll.LuminaPollApp
 import company.luminapoll.R
 import company.luminapoll.core.base.BaseActivity
 import company.luminapoll.core.network.Poll
-import company.luminapoll.core.network.PollForegroundService
+import company.luminapoll.features.poll.PollForegroundService
 import company.luminapoll.core.network.PollOption
 import company.luminapoll.core.utils.DeviceIdProvider
 import company.luminapoll.core.utils.NetworkUtils
@@ -30,20 +32,28 @@ class CreatePollActivity : BaseActivity() {
     private lateinit var etMaxParticipants: EditText
     private lateinit var etDuration: EditText
 
+    private var hostNameForLocal: String? = null
+
+    private val hostIdLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK) {
+            hostNameForLocal = result.data?.getStringExtra("EXTRA_HOST_NAME")
+            // After getting host name, proceed to create poll
+            createPollFinal()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.poll_activity_create)
 
         initViews()
         
-        applyModeTheme(
-            rootLayout = findViewById(R.id.root_layout),
-            primaryButtons = listOf(findViewById(R.id.btn_create_poll)),
-            accentTexts = listOf(findViewById(R.id.tv_add_option)),
-            accentIcons = listOf(
-                findViewById(R.id.btn_back),
-                findViewById(R.id.btn_add_option_icon)
-            )
+        // XML Theme handles background and button colors now.
+        // We only need to tint icons that are not themed by default.
+        findViewById<ImageView>(R.id.btn_back).imageTintList = android.content.res.ColorStateList.valueOf(
+            android.util.TypedValue().apply {
+                theme.resolveAttribute(R.attr.colorModePrimary, this, true)
+            }.data
         )
     }
 
@@ -58,7 +68,7 @@ class CreatePollActivity : BaseActivity() {
             finish()
         }
 
-        findViewById<android.view.View>(R.id.btn_add_option_container).setOnClickListener {
+        findViewById<View>(R.id.btn_add_option_container).setOnClickListener {
             addOption()
         }
 
@@ -99,6 +109,8 @@ class CreatePollActivity : BaseActivity() {
     private fun validateAndCreatePoll() {
         val name = etPollName.text.toString().trim()
         val question = etQuestion.text.toString().trim()
+        val maxParticipantsStr = etMaxParticipants.text.toString().trim()
+        val durationStr = etDuration.text.toString().trim()
         
         if (name.isEmpty()) {
             etPollName.error = "Poll name is required"
@@ -108,27 +120,52 @@ class CreatePollActivity : BaseActivity() {
             etQuestion.error = "Question is required"
             return
         }
+        if (maxParticipantsStr.isEmpty()) {
+            etMaxParticipants.error = "Max participants required"
+            return
+        }
+        if (durationStr.isEmpty()) {
+            etDuration.error = "Duration required"
+            return
+        }
 
+        // Validate options
+        var hasEmpty = false
+        llOptionsContainer.children.forEach { view ->
+            val text = view.findViewById<EditText>(R.id.et_option).text.toString().trim()
+            if (text.isEmpty()) {
+                view.findViewById<EditText>(R.id.et_option).error = "Option required"
+                hasEmpty = true
+            }
+        }
+        if (hasEmpty) return
+
+        if (mode == "LOCAL" && hostNameForLocal == null) {
+            val intent = Intent(this, HostIdentificationActivity::class.java).apply {
+                putExtra("EXTRA_MODE", mode)
+                putExtra("EXTRA_ROLE", role)
+            }
+            hostIdLauncher.launch(intent)
+        } else {
+            createPollFinal()
+        }
+    }
+
+    private fun createPollFinal() {
+        val name = etPollName.text.toString().trim()
+        val question = etQuestion.text.toString().trim()
         val maxParticipants = etMaxParticipants.text.toString().toIntOrNull() ?: 50
         val durationMinutes = etDuration.text.toString().toIntOrNull() ?: 5
         val endTimeMillis = System.currentTimeMillis() + (durationMinutes * 60 * 1000)
 
         val optionsList = mutableListOf<PollOption>()
-        var hasEmpty = false
         llOptionsContainer.children.forEachIndexed { index, view ->
             val text = view.findViewById<EditText>(R.id.et_option).text.toString().trim()
-            if (text.isEmpty()) {
-                view.findViewById<EditText>(R.id.et_option).error = "Option required"
-                hasEmpty = true
-            } else {
-                optionsList.add(PollOption(index, text))
-            }
+            optionsList.add(PollOption(index, text))
         }
 
-        if (hasEmpty) return
-
         val currentUser = FirebaseAuth.getInstance().currentUser
-        val hostName = currentUser?.displayName ?: currentUser?.email ?: "Unknown Host"
+        val hostName = if (mode == "LOCAL") hostNameForLocal ?: "Unknown Host" else (currentUser?.displayName ?: currentUser?.email ?: "Unknown Host")
         val hostId = if (mode == "ONLINE") currentUser?.uid ?: "" else DeviceIdProvider.getDeviceId(this)
 
         if (mode == "LOCAL") {
@@ -154,7 +191,8 @@ class CreatePollActivity : BaseActivity() {
 
             startPollService(poll)
             navigateToCodeScreen(code)
-        } else {            val code = (('A'..'Z') + ('0'..'9')).shuffled().take(6).joinToString("")
+        } else {
+            val code = (('A'..'Z') + ('0'..'9')).shuffled().take(6).joinToString("")
             val poll = Poll(
                 id = UUID.randomUUID().toString(),
                 title = name,
@@ -166,7 +204,8 @@ class CreatePollActivity : BaseActivity() {
                 hostName = hostName,
                 maxParticipants = maxParticipants,
                 durationMinutes = durationMinutes,
-                endTimeMillis = endTimeMillis
+                endTimeMillis = endTimeMillis,
+                isOnline = true
             )
             
             lifecycleScope.launch {

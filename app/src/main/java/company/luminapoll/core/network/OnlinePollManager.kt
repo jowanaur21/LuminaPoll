@@ -30,13 +30,19 @@ class OnlinePollManager {
             if (doc.exists()) {
                 val poll = doc.toObject(Poll::class.java)
                 if (poll != null) {
-                    if (poll.status == PollStatus.ENDED || System.currentTimeMillis() > poll.endTimeMillis) {
+                    val now = System.currentTimeMillis()
+                    if (poll.status == PollStatus.ENDED && poll.resultExpiryMillis > 0 && now > poll.resultExpiryMillis) {
+                        onResult(null, "Poll results have expired and been removed")
+                    } else if (poll.status == PollStatus.ENDED) {
+                        startObserving(code)
+                        onResult(poll, null) // Allow joining to see results
+                    } else if (now > poll.endTimeMillis) {
                         onResult(null, "Poll has ended")
                     } else if (poll.participantCount >= poll.maxParticipants) {
                         onResult(null, "Poll is full")
                     } else {
                         pollsCollection.document(code).update("participantCount", poll.participantCount + 1)
-                        observePoll(code)
+                        startObserving(code)
                         onResult(poll, null)
                     }
                 } else {
@@ -50,17 +56,33 @@ class OnlinePollManager {
         }
     }
 
-    private fun observePoll(code: String) {
+    fun startObserving(code: String) {
         pollListener?.remove()
         pollListener = pollsCollection.document(code).addSnapshotListener { snapshot, error ->
             if (snapshot != null && snapshot.exists()) {
                 val poll = snapshot.toObject(Poll::class.java)
-                if (poll != null && poll.status == PollStatus.ACTIVE && System.currentTimeMillis() > poll.endTimeMillis) {
-                    // Locally ended
-                    _currentPoll.value = poll.copy(status = PollStatus.ENDED)
-                } else {
-                    _currentPoll.value = poll
+                if (poll != null) {
+                    val now = System.currentTimeMillis()
+                    if (poll.status == PollStatus.ACTIVE && now > poll.endTimeMillis) {
+                        val expiry = poll.calculateResultExpiry(now)
+                        _currentPoll.value = poll.copy(status = PollStatus.ENDED, resultExpiryMillis = expiry)
+                        // Update Firestore with ENDED status and expiry
+                        pollsCollection.document(code).update(
+                            "status", PollStatus.ENDED,
+                            "resultExpiryMillis", expiry
+                        )
+                    } else if (poll.status == PollStatus.ENDED && poll.resultExpiryMillis > 0 && now > poll.resultExpiryMillis) {
+                        // Results expired, remove document
+                        pollsCollection.document(code).delete()
+                        _currentPoll.value = null
+                        pollListener?.remove()
+                    } else {
+                        _currentPoll.value = poll
+                    }
                 }
+            } else {
+                _currentPoll.value = null
+                pollListener?.remove()
             }
         }
     }
@@ -95,8 +117,14 @@ class OnlinePollManager {
     }
 
     suspend fun stopPollEarly(code: String): Boolean {
+        val poll = _currentPoll.value ?: return false
+        val now = System.currentTimeMillis()
+        val expiry = poll.calculateResultExpiry(now)
         return try {
-            pollsCollection.document(code).update("status", PollStatus.ENDED).await()
+            pollsCollection.document(code).update(
+                "status", PollStatus.ENDED,
+                "resultExpiryMillis", expiry
+            ).await()
             true
         } catch (e: Exception) {
             e.printStackTrace()
@@ -106,7 +134,13 @@ class OnlinePollManager {
 
     fun leavePoll() {
         val poll = _currentPoll.value ?: return
-        pollsCollection.document(poll.code).update("participantCount", (poll.participantCount - 1).coerceAtLeast(0))
+        val currentUserId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
+        
+        // Only joiners decrement the participant count
+        if (poll.hostId != currentUserId) {
+            pollsCollection.document(poll.code).update("participantCount", (poll.participantCount - 1).coerceAtLeast(0))
+        }
+        
         pollListener?.remove()
         pollListener = null
         _currentPoll.value = null

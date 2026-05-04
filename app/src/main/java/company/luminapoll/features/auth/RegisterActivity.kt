@@ -2,6 +2,7 @@ package company.luminapoll.features.auth
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
@@ -26,12 +27,11 @@ class RegisterActivity : BaseActivity() {
         val etEmail = findViewById<EditText>(R.id.et_email)
         val etPassword = findViewById<EditText>(R.id.et_password)
         val etConfirmPassword = findViewById<EditText>(R.id.et_confirm_password)
-        val progressOverlay = findViewById<android.view.View>(R.id.register_progress_overlay)
+        val progressOverlay = findViewById<View>(R.id.register_progress_overlay)
         val btnRegister = findViewById<Button>(R.id.btn_register)
         val btnBack = findViewById<ImageView>(R.id.btn_back)
 
-        // Auth screens have Lavender background (V75)
-        intent.putExtra("IS_DASHBOARD", true)
+        // Auth screens use IS_DASHBOARD theme
         applyModeTheme(
             rootLayout = findViewById(R.id.main),
             primaryButtons = listOf(btnRegister),
@@ -63,7 +63,7 @@ class RegisterActivity : BaseActivity() {
                 return@setOnClickListener
             }
 
-            progressOverlay.visibility = android.view.View.VISIBLE
+            progressOverlay.visibility = View.VISIBLE
             auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this) { task ->
                     if (task.isSuccessful) {
@@ -73,7 +73,7 @@ class RegisterActivity : BaseActivity() {
                         }
                         user?.updateProfile(profileUpdates)
                             ?.addOnCompleteListener { profileTask ->
-                                progressOverlay.visibility = android.view.View.GONE
+                                progressOverlay.visibility = View.GONE
                                 if (profileTask.isSuccessful) {
                                     Toast.makeText(this, "Registration successful!", Toast.LENGTH_SHORT).show()
                                     val intent = Intent(this, DashboardActivity::class.java).apply {
@@ -87,7 +87,7 @@ class RegisterActivity : BaseActivity() {
                                 }
                             }
                     } else {
-                        progressOverlay.visibility = android.view.View.GONE
+                        progressOverlay.visibility = View.GONE
                         Toast.makeText(baseContext, "Registration failed: ${task.exception?.message}",
                             Toast.LENGTH_SHORT).show()
                     }

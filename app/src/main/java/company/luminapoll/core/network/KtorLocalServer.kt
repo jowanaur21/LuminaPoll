@@ -45,7 +45,7 @@ class KtorLocalServer(
     }
 
     fun start(poll: Poll) {
-        stop() // Ensure clean start
+        stopServer() // Ensure clean start
         scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         _pollState.value = poll
         
@@ -61,7 +61,7 @@ class KtorLocalServer(
             }
         }
 
-        // Automatic end timer
+        // Automatic end/expiry timer
         scope.launch {
             while (isActive) {
                 delay(5000)
@@ -127,8 +127,17 @@ class KtorLocalServer(
 
     private fun checkPollExpiration() {
         val current = _pollState.value ?: return
-        if (current.status == PollStatus.ACTIVE && System.currentTimeMillis() > current.endTimeMillis) {
-            _pollState.update { it?.copy(status = PollStatus.ENDED) }
+        val now = System.currentTimeMillis()
+        
+        // 1. Check if voting phase should end
+        if (current.status == PollStatus.ACTIVE && now > current.endTimeMillis) {
+            val expiry = current.calculateResultExpiry(now)
+            _pollState.update { it?.copy(status = PollStatus.ENDED, resultExpiryMillis = expiry) }
+        }
+        
+        // 2. Check if results have expired
+        if (current.status == PollStatus.ENDED && current.resultExpiryMillis > 0 && now > current.resultExpiryMillis) {
+            stopServer()
         }
     }
 
@@ -174,9 +183,21 @@ class KtorLocalServer(
         }
     }
 
+    /**
+     * Ends the voting phase but keeps the server alive for results viewing.
+     */
     fun stop() {
+        val now = System.currentTimeMillis()
+        val expiry = _pollState.value?.calculateResultExpiry(now) ?: (now + Poll.EXPIRY_LOCAL_MS)
+        _pollState.update { it?.copy(status = PollStatus.ENDED, resultExpiryMillis = expiry) }
+    }
+
+    /**
+     * Completely shuts down the server and network services.
+     */
+    fun stopServer() {
         nsdHelper.unregisterService()
-        _pollState.update { it?.copy(status = PollStatus.ENDED) }
+        _pollState.update { null }
         server?.stop(1000, 2000)
         scope.cancel()
     }

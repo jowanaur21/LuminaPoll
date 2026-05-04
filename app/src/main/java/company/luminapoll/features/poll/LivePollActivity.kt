@@ -25,6 +25,7 @@ import kotlinx.coroutines.launch
 class LivePollActivity : BaseActivity() {
 
     private lateinit var llResultsContainer: LinearLayout
+    private lateinit var tvQuestion: TextView
     private lateinit var tvParticipantCount: TextView
     private lateinit var tvTimer: TextView
     private lateinit var btnStopPoll: Button
@@ -43,16 +44,28 @@ class LivePollActivity : BaseActivity() {
             accentIcons = listOf(findViewById(R.id.btn_back))
         )
         
+        // Ensure online observation starts if we have a code but no active poll
+        if (mode == "ONLINE") {
+            val app = application as LuminaPollApp
+            val code = intent.getStringExtra("EXTRA_POLL_CODE")
+            if (code != null && app.onlinePollManager.currentPoll.value == null) {
+                app.onlinePollManager.startObserving(code)
+            }
+        }
+        
         observePollUpdates()
     }
 
     private fun initViews() {
         llResultsContainer = findViewById(R.id.ll_results_container)
+        tvQuestion = findViewById(R.id.tv_question)
         tvParticipantCount = findViewById(R.id.tv_participant_count)
         tvTimer = findViewById(R.id.tv_timer)
         btnStopPoll = findViewById(R.id.btn_stop_poll)
 
         findViewById<ImageView>(R.id.btn_back).setOnClickListener {
+            // If host, just finish this activity to go back to dashboard.
+            // The poll will keep running in the background.
             finish()
         }
 
@@ -102,6 +115,7 @@ class LivePollActivity : BaseActivity() {
                         navigateToResults(it)
                         return@collectLatest
                     }
+                    tvQuestion.text = it.question
                     updateUI(it)
                     startTimer(it.endTimeMillis, it.status)
                 }

@@ -66,11 +66,14 @@ class KtorLocalClient {
                             }
                         }
                     } catch (e: Exception) {
+                        if (e is CancellationException) throw e
                         if (isActive) e.printStackTrace()
                     }
                 }
             } catch (e: Exception) {
-                _errorFlow.emit("Poll not found or connection failed")
+                if (e !is CancellationException) {
+                    _errorFlow.emit("Poll not found or connection failed")
+                }
             } finally {
                 session = null
             }

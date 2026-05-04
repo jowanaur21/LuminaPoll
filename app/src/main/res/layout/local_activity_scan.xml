@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#E1ECF4"
+    android:background="?attr/colorModeBackground"
     android:paddingTop="@dimen/margin_top">
 
     <ImageView
@@ -14,6 +14,7 @@
         android:layout_marginStart="16dp"
         android:padding="12dp"
         android:src="@drawable/back_arrow"
+        app:tint="?attr/colorModePrimary"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription" />
@@ -52,6 +53,7 @@
         android:layout_height="250dp"
         android:alpha="0.2"
         android:src="@drawable/ic_radar"
+        app:tint="?attr/colorModePrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -85,7 +87,7 @@
         android:textColor="@color/white"
         android:textSize="20sp"
         android:textStyle="bold"
-        app:backgroundTint="@color/card_blue"
+        app:backgroundTint="?attr/colorModePrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

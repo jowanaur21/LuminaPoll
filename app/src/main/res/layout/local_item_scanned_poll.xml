@@ -50,7 +50,8 @@
             android:layout_marginTop="8dp"
             android:src="@drawable/ic_participants"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_poll_name" />
+            app:layout_constraintTop_toBottomOf="@id/tv_poll_name"
+            app:tint="?attr/colorModePrimary" />
 
         <TextView
             android:id="@+id/tv_host_name"
@@ -73,7 +74,7 @@
             android:src="@drawable/ic_check"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/iv_host"
-            app:tint="@color/card_blue" />
+            app:tint="?attr/colorModePrimary" />
 
         <TextView
             android:id="@+id/tv_participant_count"
@@ -97,7 +98,7 @@
             android:textAllCaps="false"
             android:textColor="@color/white"
             android:textStyle="bold"
-            app:backgroundTint="@color/card_blue"
+            app:backgroundTint="?attr/colorModePrimary"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_status_badge" />

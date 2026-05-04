@@ -26,7 +26,7 @@
         android:usesCleartextTraffic="true">
 
         <service
-            android:name=".core.network.PollForegroundService"
+            android:name=".features.poll.PollForegroundService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
@@ -122,6 +122,11 @@
 
         <activity
             android:name=".features.poll.PollResultActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".features.poll.HostIdentificationActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 

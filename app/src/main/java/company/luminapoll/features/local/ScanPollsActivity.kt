@@ -97,6 +97,18 @@ class ScanPollsActivity : BaseActivity() {
     }
 
     private fun joinPoll(poll: Poll) {
+        // If this is the host clicking their own poll
+        val currentDeviceId = company.luminapoll.core.utils.DeviceIdProvider.getDeviceId(this)
+        if (poll.hostId == currentDeviceId) {
+            val intent = Intent(this, company.luminapoll.features.poll.LivePollActivity::class.java).apply {
+                putExtra("EXTRA_MODE", mode)
+                putExtra("EXTRA_ROLE", "HOST")
+            }
+            startActivity(intent)
+            finish()
+            return
+        }
+
         val userName = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.displayName ?: "Android User"
         (application as LuminaPollApp).localClient.connect(poll.hostIp, userName)
         val intent = Intent(this, VoteActivity::class.java).apply {

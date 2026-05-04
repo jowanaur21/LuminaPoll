@@ -13,6 +13,7 @@ import company.luminapoll.core.base.BaseActivity
 import company.luminapoll.features.auth.LoginActivity
 import company.luminapoll.features.local.ScanPollsActivity
 import company.luminapoll.features.poll.CreatePollActivity
+import company.luminapoll.features.poll.EnterCodeActivity
 
 import android.widget.Button
 import android.view.View
@@ -29,12 +30,18 @@ class DashboardActivity : BaseActivity() {
 
         updateUiForMode()
 
-        findViewById<ImageView>(R.id.btn_back2).setOnClickListener {
-            finish()
-        }
-
         findViewById<CardView>(R.id.card_join_poll).setOnClickListener {
             if (mode == "LOCAL") {
+                val activeLocalPoll = (application as LuminaPollApp).localServer.pollState.value
+                if (activeLocalPoll != null) {
+                    val intent = Intent(this, LivePollActivity::class.java).apply {
+                        putExtra("EXTRA_MODE", "LOCAL")
+                        putExtra("EXTRA_ROLE", "HOST")
+                    }
+                    startActivity(intent)
+                    return@setOnClickListener
+                }
+                
                 val intent = Intent(this, ScanPollsActivity::class.java).apply {
                     putExtra("EXTRA_MODE", mode)
                     putExtra("EXTRA_ROLE", "JOINER")
@@ -44,22 +51,67 @@ class DashboardActivity : BaseActivity() {
                 if (FirebaseAuth.getInstance().currentUser == null) {
                     startActivity(Intent(this, LoginActivity::class.java))
                 } else {
-                    Toast.makeText(this, "Online Join coming soon...", Toast.LENGTH_SHORT).show()
+                    // Check if already in an online poll
+                    val activeOnlinePoll = (application as LuminaPollApp).onlinePollManager.currentPoll.value
+                    if (activeOnlinePoll != null) {
+                        val intent = Intent(this, LivePollActivity::class.java).apply {
+                            putExtra("EXTRA_MODE", "ONLINE")
+                            putExtra("EXTRA_ROLE", if (activeOnlinePoll.hostId == FirebaseAuth.getInstance().currentUser?.uid) "HOST" else "JOINER")
+                        }
+                        startActivity(intent)
+                    } else {
+                        val intent = Intent(this, EnterCodeActivity::class.java).apply {
+                            putExtra("EXTRA_MODE", "ONLINE")
+                            putExtra("EXTRA_ROLE", "JOINER")
+                        }
+                        startActivity(intent)
+                    }
                 }
             }
         }
 
         findViewById<CardView>(R.id.card_host_poll).setOnClickListener {
-            val intent = Intent(this, CreatePollActivity::class.java).apply {
-                putExtra("EXTRA_MODE", mode)
-                putExtra("EXTRA_ROLE", "HOST")
+            if (mode == "LOCAL") {
+                val activeLocalPoll = (application as LuminaPollApp).localServer.pollState.value
+                if (activeLocalPoll != null) {
+                    val intent = Intent(this, LivePollActivity::class.java).apply {
+                        putExtra("EXTRA_MODE", "LOCAL")
+                        putExtra("EXTRA_ROLE", "HOST")
+                    }
+                    startActivity(intent)
+                } else {
+                    val intent = Intent(this, CreatePollActivity::class.java).apply {
+                        putExtra("EXTRA_MODE", mode)
+                        putExtra("EXTRA_ROLE", "HOST")
+                    }
+                    startActivity(intent)
+                }
+            } else {
+                if (FirebaseAuth.getInstance().currentUser == null) {
+                    startActivity(Intent(this, LoginActivity::class.java))
+                } else {
+                    val activeOnlinePoll = (application as LuminaPollApp).onlinePollManager.currentPoll.value
+                    val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+                    if (activeOnlinePoll != null && activeOnlinePoll.hostId == currentUserId) {
+                        val intent = Intent(this, LivePollActivity::class.java).apply {
+                            putExtra("EXTRA_MODE", "ONLINE")
+                            putExtra("EXTRA_ROLE", "HOST")
+                        }
+                        startActivity(intent)
+                    } else {
+                        val intent = Intent(this, CreatePollActivity::class.java).apply {
+                            putExtra("EXTRA_MODE", mode)
+                            putExtra("EXTRA_ROLE", "HOST")
+                        }
+                        startActivity(intent)
+                    }
+                }
             }
-            startActivity(intent)
         }
     }
 
     private fun updateUiForMode() {
-        val rootLayout = findViewById<android.view.View>(R.id.root_layout)
+        val rootLayout = findViewById<View>(R.id.root_layout)
         val titleView = findViewById<TextView>(R.id.local_dashboard_title)
         val subtitleView = findViewById<TextView>(R.id.local_dashboard_sub)
         val cardJoin = findViewById<CardView>(R.id.card_join_poll)
@@ -67,9 +119,7 @@ class DashboardActivity : BaseActivity() {
         val iconJoin = findViewById<ImageView>(R.id.icon_join)
         val iconHost = findViewById<ImageView>(R.id.icon_host)
 
-        applyModeTheme(
-            rootLayout = rootLayout
-        )
+        applyModeTheme()
 
         if (mode == "ONLINE") {
             cardJoin.setCardBackgroundColor(ContextCompat.getColor(this, R.color.color_d300))
@@ -82,7 +132,6 @@ class DashboardActivity : BaseActivity() {
             cardJoin.setCardBackgroundColor(ContextCompat.getColor(this, R.color.color_l200))
             cardHost.setCardBackgroundColor(ContextCompat.getColor(this, R.color.color_p300))
             iconJoin.setImageResource(R.drawable.ic_people_local)
-            iconHost.setImageResource(R.drawable.ic_add_circle_local)
             titleView.text = getString(R.string.local_dashboard_title)
             subtitleView.text = getString(R.string.local_dashboard_subtitle)
         }

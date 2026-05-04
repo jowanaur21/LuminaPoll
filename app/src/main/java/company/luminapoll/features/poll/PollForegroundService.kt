@@ -1,4 +1,4 @@
-package company.luminapoll.core.network
+package company.luminapoll.features.poll
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -12,6 +12,7 @@ import androidx.core.app.NotificationCompat
 import company.luminapoll.LuminaPollApp
 import company.luminapoll.R
 import company.luminapoll.features.poll.LivePollActivity
+import company.luminapoll.core.network.Poll
 
 class PollForegroundService : Service() {
 

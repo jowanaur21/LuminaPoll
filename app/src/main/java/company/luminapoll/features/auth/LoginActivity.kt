@@ -41,8 +41,7 @@ class LoginActivity : BaseActivity() {
         val btnGoogle = findViewById<View>(R.id.btn_google_login)
         val btnBack = findViewById<ImageView>(R.id.btn_back)
 
-        // Auth screens have Lavender background (V75)
-        intent.putExtra("IS_DASHBOARD", true)
+        // Use the flag passed from HomeActivity
         applyModeTheme(
             rootLayout = findViewById(R.id.main),
             primaryButtons = listOf(btnLogin),
@@ -80,11 +79,15 @@ class LoginActivity : BaseActivity() {
         }
 
         findViewById<TextView>(R.id.tv_register).setOnClickListener {
-            startActivity(Intent(this, RegisterActivity::class.java))
+            startActivity(Intent(this, RegisterActivity::class.java).apply {
+                putExtra("IS_DASHBOARD", true)
+            })
         }
         
         findViewById<TextView>(R.id.tv_forgot_password).setOnClickListener {
-            startActivity(Intent(this, ForgotPasswordActivity::class.java))
+            startActivity(Intent(this, ForgotPasswordActivity::class.java).apply {
+                putExtra("IS_DASHBOARD", true)
+            })
         }
     }
 
