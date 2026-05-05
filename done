@@ -1,0 +1,110 @@
+[33mcommit 3731bc8ac19f724b0c949664777eada6388398a9[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: Masc20 <melecioandrescabahug@gmail.com>
+Date:   Tue May 5 12:00:11 2026 +0800
+
+    feat: unique participant tracking, UI simplification, and logic verification
+    
+    - Implemented unique participant tracking for Local and Online polls using Device ID and User UID.
+    - Simplified Poll Creation UI: removed redundant Poll Name field; the Question is now the Title.
+    - Fixed theme persistence: ensured Host role and theme are maintained when re-entering a poll.
+    - Enhanced Google Sign-In robustness in LoginActivity to handle different credential types.
+    - Added PollLogicTest to verify expiry rules, Question-to-Title logic, and unique participant math.
+    - Updated KtorNetworkTest to validate reconnection handling and unique WebSocket joins.
+    - Fixed KtorLocalServer.stop() to use centralized expiry logic.
+    - Refined BaseActivity theme selection to correctly handle mode fallbacks.
+
+[33mcommit 1424fba71f424aa6428d0556c2af927201c749f6[m
+Author: Masc20 <melecioandrescabahug@gmail.com>
+Date:   Tue May 5 05:30:48 2026 +0800
+
+    feat: implement online polls with Firebase and refine host/auth flows
+    
+    - Implemented full Online Polling functionality using Firebase Firestore with real-time sync.
+    - Added OnlinePollManager for Firestore CRUD, secure voting transactions, and 24h cleanup.
+    - Refactored package structure: moved PollForegroundService to features.poll package.
+    - Centralized poll expiration logic (1h local, 24h online) in PollModels.kt.
+    - Implemented smart host redirection in ScanPollsActivity and DashboardActivity.
+    - Fixed Auth redirection and auto-login in SplashActivity.
+    - Refactored layouts and themes for consistent mode-based styling (Local/Online).
+    - Added HostIdentificationActivity for local poll hosting name entry.
+    - Fixed compilation and initialization bugs in KtorLocalServer.
+
+[33mcommit 2bf59fd6b1214d25b0023d5435a4993016a73fb3[m
+Author: Masc20 <melecioandrescabahug@gmail.com>
+Date:   Mon May 4 16:01:45 2026 +0800
+
+    ref: comprehensive layout refactoring and architectural enhancements
+    
+    - Renamed layout files to follow a prefix-based naming convention (e.g., auth_activity_login.xml).
+    - Updated all Activity classes to reference the renamed layout resources.
+    - Introduced PollForegroundService for better background session management.
+    - Added PollResultActivity and corresponding layout for detailed poll outcomes.
+    - Integrated KtorNetworkTest unit tests for local network validation.
+    - Cleaned up unused PNG assets and replaced them with XML drawables where applicable.
+    - Updated project dependencies and Gradle configurations (Kotlin 1.9.22, Gradle 8.4).
+    - Refactored KtorLocalServer and BaseActivity for improved stability and code clarity.
+
+[33mcommit f4cb6bf748e7af6953ec9fbafca5a70e3f632a00[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: Masc20 <melecioandrescabahug@gmail.com>
+Date:   Tue Apr 28 03:54:29 2026 +0800
+
+    ref: updated back button [png -> xml]
+
+[33mcommit 2f844900a84dee59068ac382937371ef7ea59973[m
+Author: Masc20 <melecioandrescabahug@gmail.com>
+Date:   Thu Apr 23 18:22:23 2026 +0800
+
+    fixed: 7 errors
+    
+    - added missing import on VotersActiviy.kt
+    - removed duplicated variable
+
+[33mcommit f6130b2e50a74eb5534aee9c67675f1f9f01a165[m
+Author: Masc20 <melecioandrescabahug@gmail.com>
+Date:   Thu Apr 23 18:12:07 2026 +0800
+
+        feat: enhance polling logic, security, and UI theming
+    
+        - User Identity: Renamed 'full_name' to 'username' across the app and integrated with Firebase display names.
+        - Host Control: Prevented hosts from voting in their own polls; added immediate redirection to Live Results after
+          creation.
+        - Early Termination: Implemented 'Stop Poll' functionality for hosts in both Local and Online modes.
+        - Local Networking: Refactored KtorLocalClient for better connection stability and real-time WebSocket
+          synchronization.
+        - Discovery: Optimized NSD (Network Service Discovery) and manual 4-digit code fallbacks for Hotspot environments.
+        - UI/UX Fixes:
+            - Resolved "cropped" progress overlays by moving them to top-level FrameLayouts.
+            - Implemented consistent mode-based theming (Blue for Local, Purple for Online) for buttons and icons.
+            - Added 'View Active Poll' shortcuts to dashboards for session continuity.
+        - Repository: Updated .gitignore to protect sensitive Firebase and IDE files; updated README with new technical
+          features and branding.
+
+[33mcommit 50949bd2542dfa684bec2a53ae9086a10edc192f[m
+Author: Masc20 <melecioandrescabahug@gmail.com>
+Date:   Thu Apr 23 16:52:37 2026 +0800
+
+    ref: updated README
+
+[33mcommit a4512a34d6d1cc0453b6a1f16805df00ad485799[m
+Author: Masc20 <melecioandrescabahug@gmail.com>
+Date:   Thu Apr 23 16:29:17 2026 +0800
+
+    init: intial push of the app
+
+[33mcommit 096b0b2995b0ee780baae5db8f599660da41b882[m
+Author: Masc20 <melecioandrescabahug@gmail.com>
+Date:   Thu Apr 23 16:22:38 2026 +0800
+
+    ref: gitignore
+
+[33mcommit 00c49df238148188ee743efeb4a81374d1ec00b1[m
+Author: Masc20 <melecioandrescabahug@gmail.com>
+Date:   Thu Apr 23 16:14:23 2026 +0800
+
+    add: gitignore
+
+[33mcommit 0af700c3de8252a31803a4d276e90bb286f84fe5[m
+Author: Joana Marie E. Abadinas <abadinasjoanamarie957@gmail.com>
+Date:   Thu Apr 23 15:55:51 2026 +0800
+
+    Initial commit

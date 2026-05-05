@@ -24,7 +24,9 @@ LuminaPoll is a versatile Android application designed to facilitate seamless po
 ### 🔐 High Integrity & Security
 - **Anti-Double Voting**: Prevents double-counting by tracking unique Device IDs (Local) or Firebase UIDs (Online).
 - **Smart Identity Persistence**: If a host accidentally closes the app, re-entering via code automatically restores their Host role and themes.
-- **Automated Cleanup**: Local polls vanish 1 hour after ending; Online polls are automatically deleted from the cloud after 24 hours.
+- **Automated Cleanup**: 
+  - Local polls vanish 1 hour after ending
+  - Online polls are automatically deleted from the cloud after 24 hours.
 
 ### 🔄 Session Continuity
 - **Host Shortcuts**: The dashboard automatically detects if you have an active hosting session and provides a one-tap shortcut to your live results.
