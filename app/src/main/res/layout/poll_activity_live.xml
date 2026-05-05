@@ -12,17 +12,17 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingHorizontal="@dimen/margin_horizontal"
-        android:paddingTop="64dp"
+        android:paddingTop="@dimen/margin_top"
         android:paddingBottom="32dp">
 
         <ImageView
             android:id="@+id/btn_back"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:src="@drawable/back_arrow"
-            app:tint="?attr/colorModePrimary"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            android:src="@drawable/back_arrow"
+            app:tint="?attr/colorModePrimary"
             tools:ignore="ContentDescription" />
 
         <TextView
@@ -33,9 +33,10 @@
             android:textColor="@color/black"
             android:textSize="24sp"
             android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="@id/btn_back"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="@id/btn_back" />
 
         <TextView
             android:id="@+id/tv_question"

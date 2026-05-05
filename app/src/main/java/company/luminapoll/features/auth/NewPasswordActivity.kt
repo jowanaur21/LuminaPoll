@@ -28,6 +28,8 @@ class NewPasswordActivity : BaseActivity() {
 
     private lateinit var strengthBars: List<View>
     private lateinit var tvStrengthLabel: TextView
+    private lateinit var tvInlineError: TextView
+    private lateinit var btnReset: Button
     private var oobCode: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,9 +41,10 @@ class NewPasswordActivity : BaseActivity() {
 
         val etNewPassword = findViewById<EditText>(R.id.et_new_password)
         val etConfirmPassword = findViewById<EditText>(R.id.et_confirm_password)
-        val btnReset = findViewById<Button>(R.id.btn_reset)
+        btnReset = findViewById(R.id.btn_reset)
         val btnBack = findViewById<ImageView>(R.id.btn_back)
         val progressOverlay = findViewById<View>(R.id.new_password_progress_overlay)
+        tvInlineError = findViewById(R.id.tv_inline_error)
 
         val ivCheckChars = findViewById<ImageView>(R.id.iv_check_chars)
         val ivCheckNumSym = findViewById<ImageView>(R.id.iv_check_num_sym)
@@ -56,12 +59,14 @@ class NewPasswordActivity : BaseActivity() {
             findViewById(R.id.v_strength_5)
         )
 
-        // Auth screens use IS_DASHBOARD theme
         applyModeTheme(
             rootLayout = findViewById(R.id.main),
             primaryButtons = listOf(btnReset),
             accentIcons = listOf(btnBack)
         )
+
+        // Initial button state
+        updateSubmitButtonState(btnReset, false)
 
         btnBack.setOnClickListener {
             finish()
@@ -92,6 +97,9 @@ class NewPasswordActivity : BaseActivity() {
                     isMatchValid = matchValid
                     updateCheckIcon(ivCheckMatch, isMatchValid)
                 }
+                
+                updateSubmitButtonState(btnReset, isCharsValid && isNumSymValid && isMatchValid)
+                tvInlineError.visibility = View.GONE
             }
             override fun afterTextChanged(s: Editable?) {}
         }
@@ -107,18 +115,18 @@ class NewPasswordActivity : BaseActivity() {
                         .addOnCompleteListener { task ->
                             progressOverlay.visibility = android.view.View.GONE
                             if (task.isSuccessful) {
-                                Toast.makeText(this, "Password updated successfully!", Toast.LENGTH_SHORT).show()
+                                showAppMessage(AppMessage("Password updated successfully!", MessageType.SUCCESS, severity = MessageSeverity.TOAST))
                                 startActivity(Intent(this, LoginActivity::class.java))
                                 finish()
                             } else {
-                                Toast.makeText(this, "Reset failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                                showAppMessage(AppMessage("Reset failed: ${task.exception?.message}", MessageType.ERROR, ErrorType.SERVER, MessageSeverity.MODAL))
                             }
                         }
                 } else {
-                    Toast.makeText(this, "Invalid or missing reset code. Please try again.", Toast.LENGTH_LONG).show()
+                    showAppMessage(AppMessage("Invalid or missing reset code. Please try again.", MessageType.ERROR, ErrorType.VALIDATION, MessageSeverity.INLINE), tvInlineError)
                 }
             } else {
-                Toast.makeText(this, "Please meet all requirements", Toast.LENGTH_SHORT).show()
+                showAppMessage(AppMessage("Please meet all requirements", MessageType.ERROR, ErrorType.VALIDATION, MessageSeverity.INLINE), tvInlineError)
             }
         }
 
@@ -140,7 +148,7 @@ class NewPasswordActivity : BaseActivity() {
             if (oobCode != null) {
                 auth.verifyPasswordResetCode(oobCode!!)
                     .addOnFailureListener { e ->
-                        Toast.makeText(this, "Invalid or expired link: ${e.message}", Toast.LENGTH_LONG).show()
+                        showAppMessage(AppMessage("Invalid or expired link: ${e.message}", MessageType.ERROR, ErrorType.SERVER, MessageSeverity.MODAL))
                         finish()
                     }
             }

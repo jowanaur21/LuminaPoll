@@ -31,8 +31,6 @@ class PollResultActivity : BaseActivity() {
 
         initViews()
         
-        findViewById<View>(R.id.main)?.let { consumeSystemBars(it) }
-        
         applyModeTheme(
             rootLayout = findViewById(R.id.root_layout),
             accentIcons = listOf(findViewById(R.id.btn_back))

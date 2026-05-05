@@ -12,9 +12,14 @@ import com.google.firebase.auth.FirebaseAuth
 import company.luminapoll.R
 import company.luminapoll.core.base.BaseActivity
 
-class ForgotPasswordActivity : BaseActivity() {
+import android.text.Editable
+import android.text.TextWatcher
+
+class   ForgotPasswordActivity : BaseActivity() {
 
     private lateinit var auth: FirebaseAuth
+    private lateinit var btnSend: Button
+    private lateinit var tvInlineError: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,17 +28,29 @@ class ForgotPasswordActivity : BaseActivity() {
         auth = FirebaseAuth.getInstance()
 
         val etEmail = findViewById<EditText>(R.id.et_email)
-        val btnSend = findViewById<Button>(R.id.btn_send)
+        btnSend = findViewById(R.id.btn_send)
         val btnBack = findViewById<ImageView>(R.id.btn_back)
         val tvBackToLogin = findViewById<TextView>(R.id.tv_back_to_login)
         val progressOverlay = findViewById<View>(R.id.forgot_progress_overlay)
+        tvInlineError = findViewById(R.id.tv_inline_error)
 
-        // Auth screens use IS_DASHBOARD theme
         applyModeTheme(
             rootLayout = findViewById(R.id.main),
             primaryButtons = listOf(btnSend),
             accentIcons = listOf(btnBack)
         )
+
+        // Initial button state
+        updateSubmitButtonState(btnSend, false)
+
+        etEmail.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                updateSubmitButtonState(btnSend, etEmail.text.toString().trim().isNotEmpty())
+                tvInlineError.visibility = View.GONE
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
 
         btnBack.setOnClickListener {
             finish()
@@ -47,7 +64,7 @@ class ForgotPasswordActivity : BaseActivity() {
             val email = etEmail.text.toString().trim()
 
             if (email.isEmpty()) {
-                Toast.makeText(this, "Please enter your email", Toast.LENGTH_SHORT).show()
+                showAppMessage(AppMessage("Please enter your email", MessageType.ERROR, ErrorType.VALIDATION, MessageSeverity.INLINE), tvInlineError)
                 return@setOnClickListener
             }
 
@@ -62,10 +79,10 @@ class ForgotPasswordActivity : BaseActivity() {
                 .addOnCompleteListener { task ->
                     progressOverlay.visibility = View.GONE
                     if (task.isSuccessful) {
-                        Toast.makeText(this, "Reset link sent! Please check your email.", Toast.LENGTH_LONG).show()
+                        showAppMessage(AppMessage("Reset link sent! Please check your email.", MessageType.SUCCESS, severity = MessageSeverity.TOAST))
                         finish()
                     } else {
-                        Toast.makeText(this, "Error: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                        showAppMessage(AppMessage("Error: ${task.exception?.message}", MessageType.ERROR, ErrorType.SERVER, MessageSeverity.MODAL))
                     }
                 }
         }

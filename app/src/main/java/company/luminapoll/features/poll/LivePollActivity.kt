@@ -79,12 +79,14 @@ class LivePollActivity : BaseActivity() {
     }
 
     private fun showStopConfirmation() {
-        androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("Stop Poll Early?")
-            .setMessage("Are you sure you want to end this poll now? No more votes will be accepted.")
-            .setPositiveButton("Stop") { _, _ -> stopPollEarly() }
-            .setNegativeButton("Cancel", null)
-            .show()
+        showAppMessage(
+            AppMessage(
+                "Are you sure you want to end this poll now? No more votes will be accepted.",
+                MessageType.WARNING,
+                severity = MessageSeverity.MODAL
+            ),
+            onConfirm = { stopPollEarly() }
+        )
     }
 
     private fun stopPollEarly() {

@@ -32,16 +32,6 @@ class DashboardActivity : BaseActivity() {
 
         findViewById<CardView>(R.id.card_join_poll).setOnClickListener {
             if (mode == "LOCAL") {
-                val activeLocalPoll = (application as LuminaPollApp).localServer.pollState.value
-                if (activeLocalPoll != null) {
-                    val intent = Intent(this, LivePollActivity::class.java).apply {
-                        putExtra("EXTRA_MODE", "LOCAL")
-                        putExtra("EXTRA_ROLE", "HOST")
-                    }
-                    startActivity(intent)
-                    return@setOnClickListener
-                }
-                
                 val intent = Intent(this, ScanPollsActivity::class.java).apply {
                     putExtra("EXTRA_MODE", mode)
                     putExtra("EXTRA_ROLE", "JOINER")
@@ -51,60 +41,31 @@ class DashboardActivity : BaseActivity() {
                 if (FirebaseAuth.getInstance().currentUser == null) {
                     startActivity(Intent(this, LoginActivity::class.java))
                 } else {
-                    // Check if already in an online poll
-                    val activeOnlinePoll = (application as LuminaPollApp).onlinePollManager.currentPoll.value
-                    if (activeOnlinePoll != null) {
-                        val intent = Intent(this, LivePollActivity::class.java).apply {
-                            putExtra("EXTRA_MODE", "ONLINE")
-                            putExtra("EXTRA_ROLE", if (activeOnlinePoll.hostId == FirebaseAuth.getInstance().currentUser?.uid) "HOST" else "JOINER")
-                        }
-                        startActivity(intent)
-                    } else {
-                        val intent = Intent(this, EnterCodeActivity::class.java).apply {
-                            putExtra("EXTRA_MODE", "ONLINE")
-                            putExtra("EXTRA_ROLE", "JOINER")
-                        }
-                        startActivity(intent)
+                    val intent = Intent(this, EnterCodeActivity::class.java).apply {
+                        putExtra("EXTRA_MODE", "ONLINE")
+                        putExtra("EXTRA_ROLE", "JOINER")
                     }
+                    startActivity(intent)
                 }
             }
         }
 
         findViewById<CardView>(R.id.card_host_poll).setOnClickListener {
             if (mode == "LOCAL") {
-                val activeLocalPoll = (application as LuminaPollApp).localServer.pollState.value
-                if (activeLocalPoll != null) {
-                    val intent = Intent(this, LivePollActivity::class.java).apply {
-                        putExtra("EXTRA_MODE", "LOCAL")
-                        putExtra("EXTRA_ROLE", "HOST")
-                    }
-                    startActivity(intent)
+                val intent = Intent(this, CreatePollActivity::class.java).apply {
+                    putExtra("EXTRA_MODE", mode)
+                    putExtra("EXTRA_ROLE", "HOST")
+                }
+                startActivity(intent)
+            } else {
+                if (FirebaseAuth.getInstance().currentUser == null) {
+                    startActivity(Intent(this, LoginActivity::class.java))
                 } else {
                     val intent = Intent(this, CreatePollActivity::class.java).apply {
                         putExtra("EXTRA_MODE", mode)
                         putExtra("EXTRA_ROLE", "HOST")
                     }
                     startActivity(intent)
-                }
-            } else {
-                if (FirebaseAuth.getInstance().currentUser == null) {
-                    startActivity(Intent(this, LoginActivity::class.java))
-                } else {
-                    val activeOnlinePoll = (application as LuminaPollApp).onlinePollManager.currentPoll.value
-                    val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
-                    if (activeOnlinePoll != null && activeOnlinePoll.hostId == currentUserId) {
-                        val intent = Intent(this, LivePollActivity::class.java).apply {
-                            putExtra("EXTRA_MODE", "ONLINE")
-                            putExtra("EXTRA_ROLE", "HOST")
-                        }
-                        startActivity(intent)
-                    } else {
-                        val intent = Intent(this, CreatePollActivity::class.java).apply {
-                            putExtra("EXTRA_MODE", mode)
-                            putExtra("EXTRA_ROLE", "HOST")
-                        }
-                        startActivity(intent)
-                    }
                 }
             }
         }
@@ -120,6 +81,7 @@ class DashboardActivity : BaseActivity() {
         val iconHost = findViewById<ImageView>(R.id.icon_host)
 
         applyModeTheme()
+        rootLayout?.let { consumeSystemBars(it) }
 
         if (mode == "ONLINE") {
             cardJoin.setCardBackgroundColor(ContextCompat.getColor(this, R.color.color_d300))

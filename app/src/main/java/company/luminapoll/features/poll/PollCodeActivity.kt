@@ -55,31 +55,24 @@ class PollCodeActivity : BaseActivity() {
             val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             val clip = ClipData.newPlainText("Poll Code", pollCode)
             clipboard.setPrimaryClip(clip)
-            Toast.makeText(this, "Code copied to clipboard", Toast.LENGTH_SHORT).show()
+            showAppMessage(AppMessage("Code copied to clipboard", MessageType.SUCCESS, severity = MessageSeverity.TOAST))
         }
 
         btnDashboard.setOnClickListener {
             if (mode == "LOCAL") {
-                // Host joins their own poll as a client to see live results
                 val userName = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.displayName ?: "Host"
                 val deviceId = company.luminapoll.core.utils.DeviceIdProvider.getDeviceId(this)
                 (application as LuminaPollApp).localClient.connect("127.0.0.1", userName, deviceId)
-                val intent = Intent(this, LivePollActivity::class.java).apply {
-                    putExtra("EXTRA_MODE", mode)
-                    putExtra("EXTRA_ROLE", "HOST")
-                    putExtra("EXTRA_POLL_CODE", pollCode)
-                }
-                startActivity(intent)
             } else {
-                // Start observing the online poll as host
                 (application as LuminaPollApp).onlinePollManager.startObserving(pollCode)
-                val intent = Intent(this, LivePollActivity::class.java).apply {
-                    putExtra("EXTRA_MODE", mode)
-                    putExtra("EXTRA_ROLE", "HOST")
-                    putExtra("EXTRA_POLL_CODE", pollCode)
-                }
-                startActivity(intent)
             }
+
+            val intent = Intent(this, LivePollActivity::class.java).apply {
+                putExtra("EXTRA_MODE", mode)
+                putExtra("EXTRA_ROLE", "HOST")
+                putExtra("EXTRA_POLL_CODE", pollCode)
+            }
+            startActivity(intent)
             finish()
         }
         

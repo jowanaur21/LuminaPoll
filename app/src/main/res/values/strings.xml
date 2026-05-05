@@ -22,7 +22,7 @@
     <string name="host_poll_desc">Create and host\na poll</string>
 
     <!-- Scan Polls Strings -->
-    <string name="join_offline_title">Join (Offline)</string>
+    <string name="join_offline_title">Join Poll</string>
     <string name="scanning_polls">Scanning for polls…</string>
     <string name="scanning_desc">Please wait while we scan\nthe local network.</string>
     <string name="cancel">Cancel</string>

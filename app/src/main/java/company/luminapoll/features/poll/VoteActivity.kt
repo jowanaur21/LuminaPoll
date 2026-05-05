@@ -27,6 +27,7 @@ class VoteActivity : BaseActivity() {
     private lateinit var tvQuestion: TextView
     private lateinit var progressBar: ProgressBar
     private lateinit var btnSubmit: Button
+    private lateinit var tvInlineError: TextView
     private var currentPoll: Poll? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,6 +42,8 @@ class VoteActivity : BaseActivity() {
             accentIcons = listOf(findViewById(R.id.btn_back))
         )
         
+        updateSubmitButtonState(btnSubmit, false)
+
         observePollUpdates()
         observeErrors()
         observeVoteSuccess()
@@ -52,10 +55,10 @@ class VoteActivity : BaseActivity() {
                 (application as LuminaPollApp).localClient.voteSuccessFlow.collectLatest { success ->
                     btnSubmit.isEnabled = true
                     if (success) {
-                        showSnackbar("Vote submitted successfully!")
+                        showAppMessage(AppMessage("Vote submitted successfully!", MessageType.SUCCESS, severity = MessageSeverity.TOAST))
                         finish()
                     } else {
-                        showSnackbar("Failed to submit vote")
+                        showAppMessage(AppMessage("Failed to submit vote", MessageType.ERROR, ErrorType.NETWORK, MessageSeverity.MODAL))
                     }
                 }
             }
@@ -66,6 +69,7 @@ class VoteActivity : BaseActivity() {
         llOptionsContainer = findViewById(R.id.ll_options_container)
         tvQuestion = findViewById(R.id.tv_question)
         btnSubmit = findViewById(R.id.btn_submit_vote)
+        tvInlineError = findViewById(R.id.tv_inline_error)
         
         progressBar = ProgressBar(this).apply {
             visibility = View.VISIBLE
@@ -80,7 +84,7 @@ class VoteActivity : BaseActivity() {
             if (selectedOptionIndex != -1) {
                 submitVote()
             } else {
-                showSnackbar("Please select an option")
+                showAppMessage(AppMessage("Please select an option", MessageType.ERROR, ErrorType.VALIDATION, MessageSeverity.INLINE), tvInlineError)
             }
         }
     }
@@ -93,12 +97,12 @@ class VoteActivity : BaseActivity() {
         }
 
         if (voterId.isEmpty()) {
-            showSnackbar("Unable to identify user")
+            showAppMessage(AppMessage("Unable to identify user", MessageType.ERROR, ErrorType.PERMISSION, MessageSeverity.MODAL))
             return
         }
 
         if (currentPoll?.votedUserIds?.contains(voterId) == true) {
-            showSnackbar("You have already voted in this poll")
+            showAppMessage(AppMessage("You have already voted in this poll", MessageType.WARNING, severity = MessageSeverity.MODAL))
             return
         }
 
@@ -110,10 +114,10 @@ class VoteActivity : BaseActivity() {
                 val success = (application as LuminaPollApp).onlinePollManager.vote(selectedOptionIndex, voterId)
                 btnSubmit.isEnabled = true
                 if (success) {
-                    showSnackbar("Vote submitted successfully!")
+                    showAppMessage(AppMessage("Vote submitted successfully!", MessageType.SUCCESS, severity = MessageSeverity.TOAST))
                     finish()
                 } else {
-                    showSnackbar("Failed to submit vote")
+                    showAppMessage(AppMessage("Failed to submit vote", MessageType.ERROR, ErrorType.SERVER, MessageSeverity.MODAL))
                 }
             }
         }
@@ -165,7 +169,7 @@ class VoteActivity : BaseActivity() {
             lifecycleScope.launch {
                 (application as LuminaPollApp).localClient.errorFlow.collectLatest { error ->
                     progressBar.visibility = View.GONE
-                    showSnackbar(error)
+                    showAppMessage(AppMessage(error, MessageType.ERROR, ErrorType.NETWORK, MessageSeverity.TOAST))
                 }
             }
         }
@@ -219,5 +223,7 @@ class VoteActivity : BaseActivity() {
                 view.backgroundTintList = null
             }
         }
+        updateSubmitButtonState(btnSubmit, true)
+        tvInlineError.visibility = View.GONE
     }
 }

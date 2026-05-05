@@ -4,15 +4,13 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.RotateAnimation
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import company.luminapoll.LuminaPollApp
 import company.luminapoll.R
 import company.luminapoll.core.base.BaseActivity
@@ -24,10 +22,9 @@ import kotlinx.coroutines.launch
 
 class ScanPollsActivity : BaseActivity() {
 
-    private lateinit var rvPolls: RecyclerView
+    private lateinit var llPollsContainer: LinearLayout
     private lateinit var radarIcon: ImageView
     private val discoveredPolls = mutableListOf<Poll>()
-    private lateinit var adapter: ScannedPollsAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,16 +36,9 @@ class ScanPollsActivity : BaseActivity() {
     }
 
     private fun initViews() {
-        rvPolls = findViewById(R.id.rv_polls)
+        llPollsContainer = findViewById(R.id.ll_polls_container)
         radarIcon = findViewById(R.id.radar_icon)
         
-        adapter = ScannedPollsAdapter(discoveredPolls) { poll ->
-            joinPoll(poll)
-        }
-        
-        rvPolls.layoutManager = LinearLayoutManager(this)
-        rvPolls.adapter = adapter
-
         val btnEnterCode = findViewById<Button>(R.id.btn_enter_code)
         val btnBack = findViewById<ImageView>(R.id.btn_back)
 
@@ -65,6 +55,7 @@ class ScanPollsActivity : BaseActivity() {
         btnEnterCode.setOnClickListener {
             startActivity(Intent(this, EnterCodeActivity::class.java).apply {
                 putExtra("EXTRA_MODE", mode)
+                putExtra("EXTRA_ROLE", role)
             })
         }
     }
@@ -75,6 +66,7 @@ class ScanPollsActivity : BaseActivity() {
             repeatCount = Animation.INFINITE
         }
         radarIcon.startAnimation(rotate)
+        radarIcon.visibility = View.VISIBLE
     }
 
     private fun startDiscovery() {
@@ -86,7 +78,8 @@ class ScanPollsActivity : BaseActivity() {
                     if (poll != null && discoveredPolls.none { it.id == poll.id }) {
                         runOnUiThread {
                             discoveredPolls.add(poll)
-                            adapter.notifyDataSetChanged()
+                            addPollToLayout(poll)
+                            
                             radarIcon.clearAnimation()
                             radarIcon.visibility = View.GONE
                         }
@@ -96,60 +89,21 @@ class ScanPollsActivity : BaseActivity() {
         }
     }
 
-    private fun joinPoll(poll: Poll) {
-        // If this is the host clicking their own poll
-        val currentDeviceId = company.luminapoll.core.utils.DeviceIdProvider.getDeviceId(this)
-        if (poll.hostId == currentDeviceId) {
-            val intent = Intent(this, company.luminapoll.features.poll.LivePollActivity::class.java).apply {
-                putExtra("EXTRA_MODE", mode)
-                putExtra("EXTRA_ROLE", "HOST")
-            }
-            startActivity(intent)
-            finish()
-            return
-        }
-
-        val userName = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.displayName ?: "Android User"
-        (application as LuminaPollApp).localClient.connect(poll.hostIp, userName, currentDeviceId)
-        val intent = Intent(this, VoteActivity::class.java).apply {
-            putExtra("EXTRA_MODE", mode)
-            putExtra("EXTRA_ROLE", role)
-        }
-        startActivity(intent)
-        finish()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        (application as LuminaPollApp).nsdHelper.stopDiscovery()
-    }
-}
-
-class ScannedPollsAdapter(
-    private val polls: List<Poll>,
-    private val onJoinClick: (Poll) -> Unit
-) : RecyclerView.Adapter<ScannedPollsAdapter.ViewHolder>() {
-
-    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+    private fun addPollToLayout(poll: Poll) {
+        val view = LayoutInflater.from(this).inflate(R.layout.local_item_scanned_poll, llPollsContainer, false)
+        
         val tvName: TextView = view.findViewById(R.id.tv_poll_name)
         val tvHost: TextView = view.findViewById(R.id.tv_host_name)
         val tvParticipants: TextView = view.findViewById(R.id.tv_participant_count)
         val tvStatus: TextView = view.findViewById(R.id.tv_status_badge)
         val btnJoin: Button = view.findViewById(R.id.btn_join)
-    }
+        val rootLayout: View = view.findViewById(R.id.cl_item_root)
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.local_item_scanned_poll, parent, false)
-        return ViewHolder(view)
-    }
-
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val poll = polls[position]
-        holder.tvName.text = poll.title // Show title instead of question
-        holder.tvHost.text = poll.hostName
-        holder.tvParticipants.text = "${poll.participantCount}/${poll.maxParticipants} Participants"
+        tvName.text = poll.title
+        tvHost.text = poll.hostName
+        tvParticipants.text = "${poll.participantCount}/${poll.maxParticipants} Participants"
         
-        holder.tvStatus.text = when(poll.status) {
+        tvStatus.text = when(poll.status) {
             PollStatus.ACTIVE -> "On going"
             PollStatus.FULL -> "Full"
             PollStatus.ENDED -> "Finished"
@@ -160,11 +114,51 @@ class ScannedPollsAdapter(
             PollStatus.FULL -> 0xFFFF5252.toInt()
             PollStatus.ENDED -> 0xFF9E9E9E.toInt()
         }
-        holder.tvStatus.backgroundTintList = android.content.res.ColorStateList.valueOf(badgeColor)
+        tvStatus.backgroundTintList = android.content.res.ColorStateList.valueOf(badgeColor)
         
-        holder.btnJoin.setOnClickListener { onJoinClick(poll) }
-        holder.btnJoin.isEnabled = poll.status == PollStatus.ACTIVE
+        btnJoin.text = if (poll.status == PollStatus.ENDED) "View Results" else "Join"
+        
+        val onJoinClick = { joinPoll(poll) }
+        btnJoin.setOnClickListener { onJoinClick() }
+        rootLayout.setOnClickListener { onJoinClick() }
+
+        llPollsContainer.addView(view)
     }
 
-    override fun getItemCount() = polls.size
+    private fun joinPoll(poll: Poll) {
+        val currentDeviceId = company.luminapoll.core.utils.DeviceIdProvider.getDeviceId(this)
+        val userName = "User"
+
+        // Connect first
+        (application as LuminaPollApp).localClient.connect(poll.hostIp, userName, currentDeviceId)
+
+        if (poll.status == PollStatus.ENDED) {
+            val intent = Intent(this, company.luminapoll.features.poll.PollResultActivity::class.java).apply {
+                val pollJson = (application as LuminaPollApp).localServer.serializePoll(poll)
+                putExtra("EXTRA_POLL_JSON", pollJson)
+                putExtra("EXTRA_MODE", "LOCAL")
+                putExtra("EXTRA_ROLE", if (poll.hostId == currentDeviceId) "HOST" else "JOINER")
+            }
+            startActivity(intent)
+        } else if (poll.hostId == currentDeviceId) {
+            val intent = Intent(this, company.luminapoll.features.poll.LivePollActivity::class.java).apply {
+                putExtra("EXTRA_MODE", "LOCAL")
+                putExtra("EXTRA_ROLE", "HOST")
+                putExtra("EXTRA_POLL_CODE", poll.code)
+            }
+            startActivity(intent)
+        } else {
+            val intent = Intent(this, VoteActivity::class.java).apply {
+                putExtra("EXTRA_MODE", "LOCAL")
+                putExtra("EXTRA_ROLE", "JOINER")
+            }
+            startActivity(intent)
+        }
+        finish()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        (application as LuminaPollApp).nsdHelper.stopDiscovery()
+    }
 }

@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorModeBackground"
@@ -45,35 +46,41 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/scan_title" />
 
-    <!-- Radar icon for background effect if no polls found yet -->
+    <ScrollView
+        android:id="@+id/sv_polls"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="16dp"
+        android:fillViewport="true"
+        android:background="@android:color/transparent"
+        app:layout_constraintBottom_toTopOf="@id/btn_enter_code"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/scan_subtitle">
+
+        <LinearLayout
+            android:id="@+id/ll_polls_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@android:color/transparent"
+            android:paddingHorizontal="8dp" />
+    </ScrollView>
 
     <ImageView
         android:id="@+id/radar_icon"
         android:layout_width="250dp"
         android:layout_height="250dp"
         android:alpha="0.2"
+        android:contentDescription="@string/scanning_polls"
+        android:visibility="gone"
         android:src="@drawable/ic_radar"
         app:tint="?attr/colorModePrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/scan_subtitle"
-        app:layout_constraintVertical_bias="0.336" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_polls"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginBottom="16dp"
-        android:paddingHorizontal="16dp"
-        app:layout_constraintBottom_toTopOf="@id/btn_enter_code"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/scan_subtitle"
-        app:layout_constraintVertical_bias="1.0"
-        tools:listitem="@layout/local_item_scanned_poll" />
+        app:layout_constraintTop_toBottomOf="@id/scan_subtitle" />
 
     <Button
         android:id="@+id/btn_enter_code"

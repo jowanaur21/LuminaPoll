@@ -24,19 +24,31 @@ import company.luminapoll.core.utils.NetworkUtils
 import kotlinx.coroutines.launch
 import java.util.UUID
 
+import android.text.Editable
+import android.text.TextWatcher
+import android.widget.TextView
+
 class CreatePollActivity : BaseActivity() {
 
     private lateinit var llOptionsContainer: LinearLayout
     private lateinit var etQuestion: EditText
     private lateinit var etMaxParticipants: EditText
     private lateinit var etDuration: EditText
+    private lateinit var btnCreatePoll: Button
+    private lateinit var tvInlineError: TextView
+
+    companion object {
+        const val REC_LOCAL_PARTICIPANTS = 50
+        const val REC_LOCAL_DURATION = 120 // 2 hours
+        const val REC_ONLINE_PARTICIPANTS = 500
+        const val REC_ONLINE_DURATION = 1440 // 24 hours
+    }
 
     private var hostNameForLocal: String? = null
 
     private val hostIdLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
             hostNameForLocal = result.data?.getStringExtra("EXTRA_HOST_NAME")
-            // After getting host name, proceed to create poll
             createPollFinal()
         }
     }
@@ -47,8 +59,6 @@ class CreatePollActivity : BaseActivity() {
 
         initViews()
         
-        // XML Theme handles background and button colors now.
-        // We only need to tint icons that are not themed by default.
         findViewById<ImageView>(R.id.btn_back).imageTintList = android.content.res.ColorStateList.valueOf(
             android.util.TypedValue().apply {
                 theme.resolveAttribute(R.attr.colorModePrimary, this, true)
@@ -61,6 +71,8 @@ class CreatePollActivity : BaseActivity() {
         etQuestion = findViewById(R.id.et_question)
         etMaxParticipants = findViewById(R.id.et_max_participants)
         etDuration = findViewById(R.id.et_duration)
+        btnCreatePoll = findViewById(R.id.btn_create_poll)
+        tvInlineError = findViewById(R.id.tv_inline_error)
 
         findViewById<ImageView>(R.id.btn_back).setOnClickListener {
             finish()
@@ -68,14 +80,66 @@ class CreatePollActivity : BaseActivity() {
 
         findViewById<View>(R.id.btn_add_option_container).setOnClickListener {
             addOption()
+            validateFields()
         }
 
-        findViewById<Button>(R.id.btn_create_poll).setOnClickListener {
+        btnCreatePoll.setOnClickListener {
             validateAndCreatePoll()
         }
         
+        setupValidation()
+        
         addOption()
         addOption()
+    }
+
+    private fun setupValidation() {
+        val watcher = object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                validateFields()
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        }
+        etQuestion.addTextChangedListener(watcher)
+        etMaxParticipants.addTextChangedListener(watcher)
+        etDuration.addTextChangedListener(watcher)
+    }
+
+    private fun validateFields() {
+        val question = etQuestion.text.toString().trim()
+        val maxParticipantsStr = etMaxParticipants.text.toString().trim()
+        val durationStr = etDuration.text.toString().trim()
+        
+        var optionsValid = llOptionsContainer.childCount >= 2
+        llOptionsContainer.children.forEach { view ->
+            if (view.findViewById<EditText>(R.id.et_option).text.toString().trim().isEmpty()) {
+                optionsValid = false
+            }
+        }
+        
+        val hasRequiredFields = question.isNotEmpty() && maxParticipantsStr.isNotEmpty() && durationStr.isNotEmpty() && optionsValid
+        updateSubmitButtonState(btnCreatePoll, hasRequiredFields)
+
+        // Show inline warnings if exceeding recommendations
+        if (hasRequiredFields) {
+            val participants = maxParticipantsStr.toIntOrNull() ?: 0
+            val duration = durationStr.toIntOrNull() ?: 0
+            
+            val (recP, recD) = if (mode == "LOCAL") REC_LOCAL_PARTICIPANTS to REC_LOCAL_DURATION else REC_ONLINE_PARTICIPANTS to REC_ONLINE_DURATION
+            
+            if (participants > recP || duration > recD) {
+                val warning = if (participants > recP && duration > recD) "Exceeding recommended participants & duration"
+                             else if (participants > recP) "Exceeding recommended participants ($recP)"
+                             else "Exceeding recommended duration (${recD/60}h)"
+                
+                showAppMessage(AppMessage(warning, MessageType.WARNING, severity = MessageSeverity.INLINE), tvInlineError)
+            } else {
+                tvInlineError.visibility = View.GONE
+            }
+        } else {
+            tvInlineError.visibility = View.GONE
+        }
     }
 
     private fun addOption() {
@@ -84,13 +148,22 @@ class CreatePollActivity : BaseActivity() {
         val btnRemove = optionView.findViewById<ImageView>(R.id.btn_remove_option)
 
         etOption.hint = "Option ${llOptionsContainer.childCount + 1}"
+        
+        etOption.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                validateFields()
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
 
         btnRemove.setOnClickListener {
             if (llOptionsContainer.childCount > 2) {
                 llOptionsContainer.removeView(optionView)
                 updateOptionHints()
+                validateFields()
             } else {
-                Toast.makeText(this, "Minimum 2 options required", Toast.LENGTH_SHORT).show()
+                showAppMessage(AppMessage("Minimum 2 options required", MessageType.WARNING, severity = MessageSeverity.TOAST))
             }
         }
 
@@ -109,30 +182,44 @@ class CreatePollActivity : BaseActivity() {
         val maxParticipantsStr = etMaxParticipants.text.toString().trim()
         val durationStr = etDuration.text.toString().trim()
         
-        if (question.isEmpty()) {
-            etQuestion.error = "Question is required"
-            return
-        }
-        if (maxParticipantsStr.isEmpty()) {
-            etMaxParticipants.error = "Max participants required"
-            return
-        }
-        if (durationStr.isEmpty()) {
-            etDuration.error = "Duration required"
+        if (question.isEmpty() || maxParticipantsStr.isEmpty() || durationStr.isEmpty()) {
+            showAppMessage(AppMessage("Please fill in all fields", MessageType.ERROR, ErrorType.VALIDATION, MessageSeverity.INLINE), tvInlineError)
             return
         }
 
-        // Validate options
-        var hasEmpty = false
+        var hasEmptyOption = false
         llOptionsContainer.children.forEach { view ->
             val text = view.findViewById<EditText>(R.id.et_option).text.toString().trim()
             if (text.isEmpty()) {
-                view.findViewById<EditText>(R.id.et_option).error = "Option required"
-                hasEmpty = true
+                hasEmptyOption = true
             }
         }
-        if (hasEmpty) return
+        if (hasEmptyOption) {
+            showAppMessage(AppMessage("Please fill all options", MessageType.ERROR, ErrorType.VALIDATION, MessageSeverity.INLINE), tvInlineError)
+            return
+        }
 
+        val participants = maxParticipantsStr.toIntOrNull() ?: 0
+        val duration = durationStr.toIntOrNull() ?: 0
+        val (recP, recD) = if (mode == "LOCAL") REC_LOCAL_PARTICIPANTS to REC_LOCAL_DURATION else REC_ONLINE_PARTICIPANTS to REC_ONLINE_DURATION
+
+        if (participants > recP || duration > recD) {
+            val warningMsg = if (mode == "LOCAL") {
+                "Large local polls may cause your device to lag or drain battery quickly. Are you sure you want to proceed?"
+            } else {
+                "Exceeding 500 participants or 24 hours may affect live update performance for some users. Proceed anyway?"
+            }
+            
+            showAppMessage(
+                AppMessage(warningMsg, MessageType.WARNING, severity = MessageSeverity.MODAL),
+                onConfirm = { checkHostAndCreate() }
+            )
+        } else {
+            checkHostAndCreate()
+        }
+    }
+
+    private fun checkHostAndCreate() {
         if (mode == "LOCAL" && hostNameForLocal == null) {
             val intent = Intent(this, HostIdentificationActivity::class.java).apply {
                 putExtra("EXTRA_MODE", mode)
@@ -169,7 +256,7 @@ class CreatePollActivity : BaseActivity() {
 
             val poll = Poll(
                 id = UUID.randomUUID().toString(),
-                title = question, // Use question as title
+                title = question, 
                 code = code,
                 question = question,
                 options = optionsList,
@@ -187,7 +274,7 @@ class CreatePollActivity : BaseActivity() {
             val code = (('A'..'Z') + ('0'..'9')).shuffled().take(6).joinToString("")
             val poll = Poll(
                 id = UUID.randomUUID().toString(),
-                title = question, // Use question as title
+                title = question, 
                 code = code,
                 question = question,
                 options = optionsList,
@@ -203,9 +290,10 @@ class CreatePollActivity : BaseActivity() {
             lifecycleScope.launch {
                 val success = (application as LuminaPollApp).onlinePollManager.createPoll(poll)
                 if (success) {
+                    showAppMessage(AppMessage("Poll created successfully!", MessageType.SUCCESS, severity = MessageSeverity.TOAST))
                     navigateToCodeScreen(code)
                 } else {
-                    Toast.makeText(this@CreatePollActivity, "Failed to create online poll", Toast.LENGTH_SHORT).show()
+                    showAppMessage(AppMessage("Failed to create online poll", MessageType.ERROR, ErrorType.SERVER, MessageSeverity.MODAL))
                 }
             }
         }

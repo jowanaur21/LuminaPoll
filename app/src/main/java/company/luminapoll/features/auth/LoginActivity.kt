@@ -21,11 +21,16 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+import android.text.Editable
+import android.text.TextWatcher
+
 class LoginActivity : BaseActivity() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var credentialManager: CredentialManager
     private lateinit var progressOverlay: View
+    private lateinit var tvInlineError: TextView
+    private lateinit var btnLogin: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,19 +39,35 @@ class LoginActivity : BaseActivity() {
         auth = FirebaseAuth.getInstance()
         credentialManager = CredentialManager.create(this)
         progressOverlay = findViewById(R.id.login_progress_overlay)
+        tvInlineError = findViewById(R.id.tv_inline_error)
 
         val etEmail = findViewById<EditText>(R.id.et_username)
         val etPassword = findViewById<EditText>(R.id.et_password)
-        val btnLogin = findViewById<Button>(R.id.btn_login)
-        val btnGoogle = findViewById<View>(R.id.btn_google_login)
+        btnLogin = findViewById(R.id.btn_login)
         val btnBack = findViewById<ImageView>(R.id.btn_back)
 
-        // Use the flag passed from HomeActivity
         applyModeTheme(
             rootLayout = findViewById(R.id.main),
             primaryButtons = listOf(btnLogin),
             accentIcons = listOf(btnBack)
         )
+
+        // Initial button state
+        updateSubmitButtonState(btnLogin, false)
+
+        val textWatcher = object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val email = etEmail.text.toString().trim()
+                val password = etPassword.text.toString().trim()
+                updateSubmitButtonState(btnLogin, email.isNotEmpty() && password.isNotEmpty())
+                tvInlineError.visibility = View.GONE
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        }
+
+        etEmail.addTextChangedListener(textWatcher)
+        etPassword.addTextChangedListener(textWatcher)
 
         btnBack.setOnClickListener {
             finish()
@@ -57,7 +78,7 @@ class LoginActivity : BaseActivity() {
             val password = etPassword.text.toString().trim()
 
             if (email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+                showAppMessage(AppMessage("Please fill in all fields", MessageType.ERROR, ErrorType.VALIDATION, MessageSeverity.INLINE), tvInlineError)
                 return@setOnClickListener
             }
 
@@ -66,10 +87,10 @@ class LoginActivity : BaseActivity() {
                 .addOnCompleteListener(this) { task ->
                     progressOverlay.visibility = View.GONE
                     if (task.isSuccessful) {
+                        showAppMessage(AppMessage("Login successful!", MessageType.SUCCESS, severity = MessageSeverity.TOAST))
                         navigateToDashboard()
                     } else {
-                        Toast.makeText(baseContext, "Authentication failed: ${task.exception?.message}",
-                            Toast.LENGTH_SHORT).show()
+                        showAppMessage(AppMessage("Authentication failed: ${task.exception?.message}", MessageType.ERROR, ErrorType.SERVER, MessageSeverity.MODAL))
                     }
                 }
         }
@@ -114,7 +135,7 @@ class LoginActivity : BaseActivity() {
             } catch (e: Exception) {
                 progressOverlay.visibility = View.GONE
                 if (e !is androidx.credentials.exceptions.GetCredentialCancellationException) {
-                    Toast.makeText(this@LoginActivity, "Google Sign-In failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                    showAppMessage(AppMessage("Google Sign-In failed: ${e.message}", MessageType.ERROR, ErrorType.NETWORK, MessageSeverity.TOAST))
                 }
             }
         }
@@ -127,7 +148,6 @@ class LoginActivity : BaseActivity() {
             val googleIdTokenCredential = if (credential is GoogleIdTokenCredential) {
                 credential
             } else {
-                // If it's a CustomCredential, try to create it using the factory method
                 GoogleIdTokenCredential.createFrom(credential.data)
             }
 
@@ -137,14 +157,15 @@ class LoginActivity : BaseActivity() {
                 .addOnCompleteListener(this@LoginActivity) { task ->
                     progressOverlay.visibility = View.GONE
                     if (task.isSuccessful) {
+                        showAppMessage(AppMessage("Google Login successful!", MessageType.SUCCESS, severity = MessageSeverity.TOAST))
                         navigateToDashboard()
                     } else {
-                        Toast.makeText(this@LoginActivity, "Firebase Auth failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                        showAppMessage(AppMessage("Firebase Auth failed: ${task.exception?.message}", MessageType.ERROR, ErrorType.SERVER, MessageSeverity.MODAL))
                     }
                 }
         } catch (e: Exception) {
             progressOverlay.visibility = View.GONE
-            Toast.makeText(this, "Google Sign-In error: ${e.message} (Type: ${credential.type})", Toast.LENGTH_LONG).show()
+            showAppMessage(AppMessage("Google Sign-In error: ${e.message}", MessageType.ERROR, ErrorType.SERVER, MessageSeverity.MODAL))
         }
     }
 
