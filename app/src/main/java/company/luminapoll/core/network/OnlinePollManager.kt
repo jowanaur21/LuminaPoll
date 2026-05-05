@@ -6,6 +6,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.tasks.await
 
+/**
+ * Manages the lifecycle, voting, and real-time updates for Online polls.
+ * 
+ * This class relies on Firebase Firestore. It uses `StateFlow` to broadcast 
+ * real-time changes to the UI layer. All voting operations use Firestore 
+ * Transactions to guarantee data integrity and prevent double-counting.
+ */
 class OnlinePollManager {
     private val db = FirebaseFirestore.getInstance()
     private val pollsCollection = db.collection("polls")

@@ -21,6 +21,14 @@ import kotlinx.serialization.encodeToString
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 
+/**
+ * Embedded local HTTP and WebSocket server using Ktor.
+ *
+ * This class is responsible for hosting a local poll. It runs a full CIO server 
+ * on the Android device. It uses WebSockets (`/poll-ws`) to broadcast real-time 
+ * state updates to all connected clients. It works in tandem with [NsdHelper] 
+ * to make the server discoverable on the local network.
+ */
 class KtorLocalServer(
     context: Context,
     private val nsdHelper: NsdHelper = NsdHelper(context)

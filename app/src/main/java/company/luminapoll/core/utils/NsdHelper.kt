@@ -5,6 +5,14 @@ import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
 import android.util.Log
 
+/**
+ * Helper class for Network Service Discovery (NSD) / mDNS.
+ * 
+ * This enables "Magic Local Polling". When a host starts a local poll, this class 
+ * broadcasts the service over the local Wi-Fi. Other devices running the app use 
+ * this class to listen for those broadcasts, allowing them to find the host's IP 
+ * address automatically without manual entry.
+ */
 class NsdHelper(context: Context) {
     private val nsdManager = context.getSystemService(Context.NSD_SERVICE) as NsdManager
     private val SERVICE_TYPE = "_luminapoll._tcp."
