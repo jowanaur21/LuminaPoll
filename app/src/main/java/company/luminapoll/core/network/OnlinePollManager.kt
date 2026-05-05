@@ -25,34 +25,52 @@ class OnlinePollManager {
         }
     }
 
-    fun joinPoll(code: String, onResult: (Poll?, String?) -> Unit) {
-        pollsCollection.document(code).get().addOnSuccessListener { doc ->
-            if (doc.exists()) {
-                val poll = doc.toObject(Poll::class.java)
-                if (poll != null) {
-                    val now = System.currentTimeMillis()
-                    if (poll.status == PollStatus.ENDED && poll.resultExpiryMillis > 0 && now > poll.resultExpiryMillis) {
-                        onResult(null, "Poll results have expired and been removed")
-                    } else if (poll.status == PollStatus.ENDED) {
-                        startObserving(code)
-                        onResult(poll, null) // Allow joining to see results
-                    } else if (now > poll.endTimeMillis) {
-                        onResult(null, "Poll has ended")
-                    } else if (poll.participantCount >= poll.maxParticipants) {
-                        onResult(null, "Poll is full")
-                    } else {
-                        pollsCollection.document(code).update("participantCount", poll.participantCount + 1)
-                        startObserving(code)
-                        onResult(poll, null)
-                    }
-                } else {
-                    onResult(null, "Poll data corrupted")
-                }
-            } else {
-                onResult(null, "Poll not found")
+    fun joinPoll(code: String, userId: String, onResult: (Poll?, String?) -> Unit) {
+        db.runTransaction { transaction ->
+            val docRef = pollsCollection.document(code)
+            val snapshot = transaction.get(docRef)
+            
+            if (!snapshot.exists()) {
+                throw Exception("Poll not found")
             }
-        }.addOnFailureListener {
-            onResult(null, it.message)
+            
+            val poll = snapshot.toObject(Poll::class.java) ?: throw Exception("Poll data corrupted")
+            val now = System.currentTimeMillis()
+            
+            if (poll.status == PollStatus.ENDED && poll.resultExpiryMillis > 0 && now > poll.resultExpiryMillis) {
+                throw Exception("Poll results have expired and been removed")
+            }
+            
+            // If user is host, they don't count as a participant, but they can still observe
+            if (poll.hostId == userId) {
+                return@runTransaction poll
+            }
+
+            // If already a participant, just return the poll
+            if (poll.participantIds.contains(userId)) {
+                return@runTransaction poll
+            }
+            
+            if (poll.status == PollStatus.ACTIVE && now > poll.endTimeMillis) {
+                throw Exception("Poll has ended")
+            }
+            
+            if (poll.participantCount >= poll.maxParticipants) {
+                throw Exception("Poll is full")
+            }
+            
+            val updatedParticipants = poll.participantIds.toMutableList().apply { add(userId) }
+            val newCount = updatedParticipants.size
+            
+            transaction.update(docRef, "participantIds", updatedParticipants)
+            transaction.update(docRef, "participantCount", newCount)
+            
+            poll.copy(participantIds = updatedParticipants, participantCount = newCount)
+        }.addOnSuccessListener { poll ->
+            startObserving(code)
+            onResult(poll, null)
+        }.addOnFailureListener { e ->
+            onResult(null, e.message)
         }
     }
 
@@ -104,10 +122,10 @@ class OnlinePollManager {
                     if (option.id == optionId) option.copy(votes = option.votes + 1) else option
                 }
                 
-                val updatedVoters = freshPoll.votedUserIds.toMutableSet().apply { add(voterId) }
+                val updatedVoters = freshPoll.votedUserIds.toMutableList().apply { add(voterId) }
                 
                 transaction.update(pollsCollection.document(poll.code), "options", updatedOptions)
-                transaction.update(pollsCollection.document(poll.code), "votedUserIds", updatedVoters.toList())
+                transaction.update(pollsCollection.document(poll.code), "votedUserIds", updatedVoters)
             }.await()
             true
         } catch (e: Exception) {

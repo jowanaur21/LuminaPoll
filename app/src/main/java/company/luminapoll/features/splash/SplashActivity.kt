@@ -28,20 +28,10 @@ class SplashActivity : BaseActivity() {
             return
         }
 
-        // Wait for splashDelay then transition to Main or Dashboard
+        // Wait for splashDelay then transition to Main
         val splashDelay: Long = 2000
         Handler(Looper.getMainLooper()).postDelayed({
-            val currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
-            if (currentUser != null) {
-                val nextIntent = Intent(this, company.luminapoll.features.dashboard.DashboardActivity::class.java).apply {
-                    putExtra("EXTRA_MODE", "ONLINE")
-                    putExtra("IS_DASHBOARD", true)
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                }
-                startActivity(nextIntent)
-            } else {
-                startActivity(Intent(this, MainActivity::class.java))
-            }
+            startActivity(Intent(this, MainActivity::class.java))
             finish()
         }, splashDelay)
     }

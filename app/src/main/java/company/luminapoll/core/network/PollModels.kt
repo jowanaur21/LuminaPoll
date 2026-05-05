@@ -9,12 +9,12 @@ enum class PollStatus {
 
 @Serializable
 data class Poll(
-    val id: String,
-    val title: String,
-    val code: String,
-    val question: String,
-    val options: List<PollOption>,
-    val hostIp: String,
+    val id: String = "",
+    val title: String = "",
+    val code: String = "",
+    val question: String = "",
+    val options: List<PollOption> = emptyList(),
+    val hostIp: String = "",
     val hostId: String = "",
     val hostName: String = "Unknown Host",
     val port: Int = 8080,
@@ -24,7 +24,8 @@ data class Poll(
     var durationMinutes: Int = 5,
     var endTimeMillis: Long = 0,
     var resultExpiryMillis: Long = 0,
-    val votedUserIds: MutableSet<String> = mutableSetOf(),
+    val votedUserIds: List<String> = emptyList(),
+    val participantIds: List<String> = emptyList(),
     val isOnline: Boolean = false
 ) {
     companion object {
@@ -39,15 +40,15 @@ data class Poll(
 
 @Serializable
 data class PollOption(
-    val id: Int,
-    val text: String,
+    val id: Int = 0,
+    val text: String = "",
     var votes: Int = 0
 )
 
 @Serializable
 sealed class PollMessage {
     @Serializable
-    data class Join(val participantName: String) : PollMessage()
+    data class Join(val participantName: String, val deviceId: String) : PollMessage()
     
     @Serializable
     data class Vote(val optionId: Int, val voterId: String) : PollMessage()

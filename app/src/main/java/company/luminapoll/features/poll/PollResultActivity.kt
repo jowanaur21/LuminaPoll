@@ -83,8 +83,10 @@ class PollResultActivity : BaseActivity() {
         val percentage = if (totalVotes > 0) (option.votes.toFloat() / totalVotes * 100).toInt() else 0
         progressBar.progress = percentage
         
-        val tintColor = if (mode == "ONLINE") R.color.online_purple_light else R.color.local_blue_light
-        progressBar.progressTintList = ContextCompat.getColorStateList(this, tintColor)
+        val typedValue = android.util.TypedValue()
+        theme.resolveAttribute(R.attr.colorModePrimary, typedValue, true)
+        val primaryColor = typedValue.data
+        progressBar.progressTintList = android.content.res.ColorStateList.valueOf(primaryColor)
         
         tvStats.text = "$percentage% (${option.votes})"
     }

@@ -149,7 +149,7 @@ class VoteActivity : BaseActivity() {
         if (poll.hostId == currentUserId) {
             val intent = Intent(this, LivePollActivity::class.java).apply {
                 putExtra("EXTRA_MODE", mode)
-                putExtra("EXTRA_ROLE", role)
+                putExtra("EXTRA_ROLE", "HOST")
                 putExtra("EXTRA_POLL_CODE", poll.code)
             }
             startActivity(intent)

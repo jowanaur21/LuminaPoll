@@ -42,14 +42,14 @@ class KtorLocalClient {
     private var connectionJob: Job? = null
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
-    fun connect(host: String, participantName: String, port: Int = 8080) {
+    fun connect(host: String, participantName: String, deviceId: String, port: Int = 8080) {
         connectionJob?.cancel()
         connectionJob = scope.launch {
             try {
                 client.webSocket(host = host, port = port, path = "/poll-ws") {
                     session = this
                     // Send Join message immediately
-                    sendSerialized<PollMessage>(PollMessage.Join(participantName))
+                    sendSerialized<PollMessage>(PollMessage.Join(participantName, deviceId))
                     try {
                         while (isActive) {
                             when (val message = receiveDeserialized<PollMessage>()) {

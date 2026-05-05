@@ -62,9 +62,11 @@ class PollCodeActivity : BaseActivity() {
             if (mode == "LOCAL") {
                 // Host joins their own poll as a client to see live results
                 val userName = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.displayName ?: "Host"
-                (application as LuminaPollApp).localClient.connect("127.0.0.1", userName)
+                val deviceId = company.luminapoll.core.utils.DeviceIdProvider.getDeviceId(this)
+                (application as LuminaPollApp).localClient.connect("127.0.0.1", userName, deviceId)
                 val intent = Intent(this, LivePollActivity::class.java).apply {
                     putExtra("EXTRA_MODE", mode)
+                    putExtra("EXTRA_ROLE", "HOST")
                     putExtra("EXTRA_POLL_CODE", pollCode)
                 }
                 startActivity(intent)
@@ -73,6 +75,7 @@ class PollCodeActivity : BaseActivity() {
                 (application as LuminaPollApp).onlinePollManager.startObserving(pollCode)
                 val intent = Intent(this, LivePollActivity::class.java).apply {
                     putExtra("EXTRA_MODE", mode)
+                    putExtra("EXTRA_ROLE", "HOST")
                     putExtra("EXTRA_POLL_CODE", pollCode)
                 }
                 startActivity(intent)

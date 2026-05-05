@@ -96,20 +96,9 @@ class KtorLocalServer(
                     return@webSocket
                 }
 
-                if (currentPoll.participantCount >= currentPoll.maxParticipants) {
-                    sendSerialized(PollMessage.Error("This poll is full"))
-                    close(CloseReason(CloseReason.Codes.NORMAL, "Poll full"))
-                    return@webSocket
-                }
-
                 sessions.add(this)
-                _pollState.update { it?.copy(participantCount = it.participantCount + 1) }
                 
                 try {
-                    _pollState.value?.let { 
-                        sendSerialized<PollMessage>(PollMessage.Update(it))
-                    }
-                    
                     while (true) {
                         val message = receiveDeserialized<PollMessage>()
                         this@KtorLocalServer.checkPollExpiration()
@@ -119,7 +108,6 @@ class KtorLocalServer(
                     // This is expected when connection closes
                 } finally {
                     sessions.remove(this)
-                    _pollState.update { it?.copy(participantCount = (it.participantCount - 1).coerceAtLeast(0)) }
                 }
             }
         }
@@ -143,6 +131,26 @@ class KtorLocalServer(
 
     private suspend fun handleMessage(message: PollMessage?) {
         when (message) {
+            is PollMessage.Join -> {
+                _pollState.update { currentPoll ->
+                    if (currentPoll != null && 
+                        currentPoll.hostId != message.deviceId && 
+                        !currentPoll.participantIds.contains(message.deviceId)) {
+                        
+                        val updatedParticipants = currentPoll.participantIds.toMutableList().apply { 
+                            add(message.deviceId) 
+                        }
+                        currentPoll.copy(
+                            participantIds = updatedParticipants,
+                            participantCount = updatedParticipants.size
+                        )
+                    } else {
+                        currentPoll
+                    }
+                }
+                // Send initial state to the joining user
+                _pollState.value?.let { broadcastUpdate(it) }
+            }
             is PollMessage.Vote -> {
                 _pollState.update { currentPoll ->
                     if (currentPoll != null && 
@@ -155,7 +163,7 @@ class KtorLocalServer(
                             } else option
                         }
                         
-                        val updatedVoters = currentPoll.votedUserIds.toMutableSet().apply {
+                        val updatedVoters = currentPoll.votedUserIds.toMutableList().apply {
                             add(message.voterId)
                         }
                         

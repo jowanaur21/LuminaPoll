@@ -27,7 +27,6 @@ import java.util.UUID
 class CreatePollActivity : BaseActivity() {
 
     private lateinit var llOptionsContainer: LinearLayout
-    private lateinit var etPollName: EditText
     private lateinit var etQuestion: EditText
     private lateinit var etMaxParticipants: EditText
     private lateinit var etDuration: EditText
@@ -59,7 +58,6 @@ class CreatePollActivity : BaseActivity() {
 
     private fun initViews() {
         llOptionsContainer = findViewById(R.id.ll_options_container)
-        etPollName = findViewById(R.id.et_poll_name)
         etQuestion = findViewById(R.id.et_question)
         etMaxParticipants = findViewById(R.id.et_max_participants)
         etDuration = findViewById(R.id.et_duration)
@@ -107,15 +105,10 @@ class CreatePollActivity : BaseActivity() {
     }
 
     private fun validateAndCreatePoll() {
-        val name = etPollName.text.toString().trim()
         val question = etQuestion.text.toString().trim()
         val maxParticipantsStr = etMaxParticipants.text.toString().trim()
         val durationStr = etDuration.text.toString().trim()
         
-        if (name.isEmpty()) {
-            etPollName.error = "Poll name is required"
-            return
-        }
         if (question.isEmpty()) {
             etQuestion.error = "Question is required"
             return
@@ -152,7 +145,6 @@ class CreatePollActivity : BaseActivity() {
     }
 
     private fun createPollFinal() {
-        val name = etPollName.text.toString().trim()
         val question = etQuestion.text.toString().trim()
         val maxParticipants = etMaxParticipants.text.toString().toIntOrNull() ?: 50
         val durationMinutes = etDuration.text.toString().toIntOrNull() ?: 5
@@ -177,7 +169,7 @@ class CreatePollActivity : BaseActivity() {
 
             val poll = Poll(
                 id = UUID.randomUUID().toString(),
-                title = name,
+                title = question, // Use question as title
                 code = code,
                 question = question,
                 options = optionsList,
@@ -195,7 +187,7 @@ class CreatePollActivity : BaseActivity() {
             val code = (('A'..'Z') + ('0'..'9')).shuffled().take(6).joinToString("")
             val poll = Poll(
                 id = UUID.randomUUID().toString(),
-                title = name,
+                title = question, // Use question as title
                 code = code,
                 question = question,
                 options = optionsList,

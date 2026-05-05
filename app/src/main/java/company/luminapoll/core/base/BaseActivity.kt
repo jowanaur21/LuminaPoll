@@ -29,10 +29,13 @@ abstract class BaseActivity : AppCompatActivity() {
 
         // Apply theme based on mode and role
         val themeRes = when {
-            intent.getBooleanExtra("IS_DASHBOARD", false) -> R.style.Theme_LuminaPoll_OnlineHost
             mode == "ONLINE" && role == "HOST" -> R.style.Theme_LuminaPoll_OnlineHost
             mode == "ONLINE" && role == "JOINER" -> R.style.Theme_LuminaPoll_OnlineJoin
             mode == "LOCAL" && role == "HOST" -> R.style.Theme_LuminaPoll_LocalHost
+            mode == "LOCAL" && role == "JOINER" -> R.style.Theme_LuminaPoll_LocalJoin
+            // Fallback for dashboards if role isn't explicitly set yet
+            intent.getBooleanExtra("IS_DASHBOARD", false) && mode == "ONLINE" -> R.style.Theme_LuminaPoll_OnlineHost
+            intent.getBooleanExtra("IS_DASHBOARD", false) && mode == "LOCAL" -> R.style.Theme_LuminaPoll_LocalHost
             else -> R.style.Theme_LuminaPoll_LocalJoin
         }
         setTheme(themeRes)

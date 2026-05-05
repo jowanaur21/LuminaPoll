@@ -46,24 +46,41 @@ class KtorNetworkTest {
             assertNotNull("Poll details should not be null", details)
             assertEquals("Test Poll", details?.title)
 
-            println("Connecting WebSocket...")
-            client.connect("127.0.0.1", "TestUser", 9090)
+            println("Connecting WebSocket for User 1...")
+            // The connect method now takes deviceId
+            client.connect("127.0.0.1", "TestUser1", "device-1", 9090)
             
             println("Waiting for initial update...")
-            // Wait up to 5 seconds for state to be non-null
-            var initialState: Poll? = null
+            var state1: Poll? = null
             for (i in 1..50) {
-                initialState = client.pollState.value
-                if (initialState != null) break
+                state1 = client.pollState.value
+                if (state1 != null && state1.participantCount == 1) break
                 delay(100)
             }
             
-            assertNotNull("Initial poll state should be received", initialState)
-            println("Initial state received: participantCount=${initialState?.participantCount}")
-            assertEquals(1, initialState?.participantCount)
+            assertEquals(1, state1?.participantCount)
+            assertEquals("device-1", state1?.participantIds?.get(0))
+
+            println("Connecting User 1 again (Reconnection)...")
+            client.connect("127.0.0.1", "TestUser1", "device-1", 9090)
+            delay(1000)
+            
+            assertEquals(1, client.pollState.value?.participantCount) // Should NOT increase
+
+            println("Connecting User 2...")
+            val client2 = KtorLocalClient()
+            client2.connect("127.0.0.1", "TestUser2", "device-2", 9090)
+            
+            var state2: Poll? = null
+            for (i in 1..50) {
+                state2 = client2.pollState.value
+                if (state2 != null && state2.participantCount == 2) break
+                delay(100)
+            }
+            assertEquals(2, state2?.participantCount)
 
             println("Submitting vote...")
-            client.vote(0, "voter-1")
+            client.vote(0, "device-1")
             
             println("Waiting for vote broadcast...")
             var updatedState: Poll? = null
@@ -79,7 +96,7 @@ class KtorNetworkTest {
         } finally {
             println("Cleaning up...")
             client.disconnect()
-            server.stop()
+            server.stopServer()
         }
     }
 }

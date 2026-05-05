@@ -80,12 +80,13 @@ class EnterCodeActivity : BaseActivity() {
         
         val userName = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.displayName ?: "Android User"
 
+        val deviceId = company.luminapoll.core.utils.DeviceIdProvider.getDeviceId(this)
         (application as LuminaPollApp).nsdHelper.discoverServices { service ->
             if (service.serviceName == "LuminaPoll_$code") {
                 val hostIp = service.host.hostAddress
                 if (hostIp != null) {
                     runOnUiThread {
-                        (application as LuminaPollApp).localClient.connect(hostIp, userName)
+                        (application as LuminaPollApp).localClient.connect(hostIp, userName, deviceId)
                     }
                 }
             }
@@ -100,7 +101,7 @@ class EnterCodeActivity : BaseActivity() {
             lifecycleScope.launch {
                 kotlinx.coroutines.delay(1000)
                 if ((application as LuminaPollApp).localClient.pollState.value == null) {
-                    (application as LuminaPollApp).localClient.connect(hostIp, userName)
+                    (application as LuminaPollApp).localClient.connect(hostIp, userName, deviceId)
                 }
             }
         }
@@ -110,7 +111,9 @@ class EnterCodeActivity : BaseActivity() {
         progressBar.visibility = View.VISIBLE
         btnJoin.isEnabled = false
         
-        (application as LuminaPollApp).onlinePollManager.joinPoll(code) { poll, error ->
+        val userId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: ""
+        
+        (application as LuminaPollApp).onlinePollManager.joinPoll(code, userId) { poll, error ->
             progressBar.visibility = View.GONE
             btnJoin.isEnabled = true
             if (poll != null) {

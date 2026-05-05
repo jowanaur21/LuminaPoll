@@ -122,8 +122,16 @@ class LoginActivity : BaseActivity() {
 
     private fun handleGoogleSignInResult(result: androidx.credentials.GetCredentialResponse) {
         val credential = result.credential
-        if (credential is GoogleIdTokenCredential) {
-            val googleIdToken = credential.idToken
+        
+        try {
+            val googleIdTokenCredential = if (credential is GoogleIdTokenCredential) {
+                credential
+            } else {
+                // If it's a CustomCredential, try to create it using the factory method
+                GoogleIdTokenCredential.createFrom(credential.data)
+            }
+
+            val googleIdToken = googleIdTokenCredential.idToken
             val firebaseCredential = GoogleAuthProvider.getCredential(googleIdToken, null)
             auth.signInWithCredential(firebaseCredential)
                 .addOnCompleteListener(this@LoginActivity) { task ->
@@ -134,14 +142,16 @@ class LoginActivity : BaseActivity() {
                         Toast.makeText(this@LoginActivity, "Firebase Auth failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
-        } else {
+        } catch (e: Exception) {
             progressOverlay.visibility = View.GONE
+            Toast.makeText(this, "Google Sign-In error: ${e.message} (Type: ${credential.type})", Toast.LENGTH_LONG).show()
         }
     }
 
     private fun navigateToDashboard() {
         val intent = Intent(this, DashboardActivity::class.java).apply {
             putExtra("EXTRA_MODE", "ONLINE")
+            putExtra("IS_DASHBOARD", true)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
         startActivity(intent)

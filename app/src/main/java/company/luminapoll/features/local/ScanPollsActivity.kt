@@ -110,7 +110,7 @@ class ScanPollsActivity : BaseActivity() {
         }
 
         val userName = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.displayName ?: "Android User"
-        (application as LuminaPollApp).localClient.connect(poll.hostIp, userName)
+        (application as LuminaPollApp).localClient.connect(poll.hostIp, userName, currentDeviceId)
         val intent = Intent(this, VoteActivity::class.java).apply {
             putExtra("EXTRA_MODE", mode)
             putExtra("EXTRA_ROLE", role)

@@ -128,6 +128,7 @@ class LivePollActivity : BaseActivity() {
             val pollJson = (application as LuminaPollApp).localServer.serializePoll(poll)
             putExtra("EXTRA_POLL_JSON", pollJson)
             putExtra("EXTRA_MODE", mode)
+            putExtra("EXTRA_ROLE", role)
         }
         startActivity(intent)
         finish()
