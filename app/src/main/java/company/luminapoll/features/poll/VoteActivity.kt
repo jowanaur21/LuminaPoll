@@ -143,13 +143,13 @@ class VoteActivity : BaseActivity() {
         currentPoll = poll
         progressBar.visibility = View.GONE
 
-        // Prevent host from voting, redirect to results
         val currentUserId = if (mode == "LOCAL") {
             DeviceIdProvider.getDeviceId(this)
         } else {
             FirebaseAuth.getInstance().currentUser?.uid ?: ""
         }
 
+        // 1. If host, go to LivePollActivity
         if (poll.hostId == currentUserId) {
             val intent = Intent(this, LivePollActivity::class.java).apply {
                 putExtra("EXTRA_MODE", mode)
@@ -161,6 +161,30 @@ class VoteActivity : BaseActivity() {
             return
         }
 
+        // 2. If already voted or poll ended, redirect
+        if (poll.votedUserIds.contains(currentUserId) || poll.status == company.luminapoll.core.network.PollStatus.ENDED) {
+            if (poll.status == company.luminapoll.core.network.PollStatus.ENDED) {
+                val intent = Intent(this, PollResultActivity::class.java).apply {
+                    val pollJson = (application as company.luminapoll.LuminaPollApp).localServer.serializePoll(poll)
+                    putExtra("EXTRA_POLL_JSON", pollJson)
+                    putExtra("EXTRA_MODE", mode)
+                    putExtra("EXTRA_ROLE", "JOINER")
+                }
+                startActivity(intent)
+                finish()
+            } else {
+                // Already voted, see live results
+                val intent = Intent(this, LivePollActivity::class.java).apply {
+                    putExtra("EXTRA_MODE", mode)
+                    putExtra("EXTRA_ROLE", "VOTER")
+                    putExtra("EXTRA_POLL_CODE", poll.code)
+                }
+                startActivity(intent)
+                finish()
+            }
+            return
+        }
+
         updatePollUI(poll)
     }
 
@@ -169,6 +193,11 @@ class VoteActivity : BaseActivity() {
             lifecycleScope.launch {
                 (application as LuminaPollApp).localClient.errorFlow.collectLatest { error ->
                     progressBar.visibility = View.GONE
+                    if (error.contains("ended", true)) {
+                        // If poll ended while we were voting, we might get an error from WS
+                        // handlePollUpdate will take care of redirection if state updates, 
+                        // but if we are disconnected, we might need manual action.
+                    }
                     showAppMessage(AppMessage(error, MessageType.ERROR, ErrorType.NETWORK, MessageSeverity.TOAST))
                 }
             }
@@ -210,15 +239,16 @@ class VoteActivity : BaseActivity() {
         val tintColor = if (mode == "ONLINE") R.color.login_btn else R.color.card_blue
         
         llOptionsContainer.children.forEachIndexed { i, view ->
-            val indicator = view.findViewById<View>(R.id.v_radio_indicator)
+            val container = view.findViewById<View>(R.id.v_radio_container)
+            val check = view.findViewById<View>(R.id.iv_radio_check)
             if (i == index) {
-                indicator.alpha = 1.0f
-                indicator.backgroundTintList = androidx.core.content.ContextCompat.getColorStateList(this, tintColor)
+                check.visibility = View.VISIBLE
+                container.backgroundTintList = androidx.core.content.ContextCompat.getColorStateList(this, tintColor)
                 view.setBackgroundResource(R.drawable.bg_google_btn)
                 view.backgroundTintList = androidx.core.content.ContextCompat.getColorStateList(this, tintColor)
             } else {
-                indicator.alpha = 0.2f
-                indicator.backgroundTintList = null
+                check.visibility = View.INVISIBLE
+                container.backgroundTintList = androidx.core.content.ContextCompat.getColorStateList(this, R.color.result_bar_bg)
                 view.setBackgroundResource(R.drawable.bg_edittext)
                 view.backgroundTintList = null
             }

@@ -58,7 +58,7 @@ class OnlinePollManager {
                 return@runTransaction poll
             }
             
-            if (poll.status == PollStatus.ACTIVE && now > poll.endTimeMillis) {
+            if (poll.status == PollStatus.ACTIVE && now > (poll.endTimeMillis + 60000)) {
                 throw Exception("Poll has ended")
             }
             
@@ -82,23 +82,33 @@ class OnlinePollManager {
     }
 
     fun startObserving(code: String) {
+        val currentUserId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
         pollListener?.remove()
         pollListener = pollsCollection.document(code).addSnapshotListener { snapshot, error ->
             if (snapshot != null && snapshot.exists()) {
                 val poll = snapshot.toObject(Poll::class.java)
                 if (poll != null) {
                     val now = System.currentTimeMillis()
+                    // Only the host should push the "ENDED" status to Firestore based on time.
+                    // Voters will see it as ENDED locally if their clock is past endTime, 
+                    // but they won't corrupt the database for others.
                     if (poll.status == PollStatus.ACTIVE && now > poll.endTimeMillis) {
                         val expiry = poll.calculateResultExpiry(now)
-                        _currentPoll.value = poll.copy(status = PollStatus.ENDED, resultExpiryMillis = expiry)
-                        // Update Firestore with ENDED status and expiry
-                        pollsCollection.document(code).update(
-                            "status", PollStatus.ENDED,
-                            "resultExpiryMillis", expiry
-                        )
+                        val endedPoll = poll.copy(status = PollStatus.ENDED, resultExpiryMillis = expiry)
+                        _currentPoll.value = endedPoll
+                        
+                        if (poll.hostId == currentUserId) {
+                            // Only host updates remote status
+                            pollsCollection.document(code).update(
+                                "status", PollStatus.ENDED,
+                                "resultExpiryMillis", expiry
+                            )
+                        }
                     } else if (poll.status == PollStatus.ENDED && poll.resultExpiryMillis > 0 && now > poll.resultExpiryMillis) {
-                        // Results expired, remove document
-                        pollsCollection.document(code).delete()
+                        // Results expired. Only host deletes from Firestore.
+                        if (poll.hostId == currentUserId) {
+                            pollsCollection.document(code).delete()
+                        }
                         _currentPoll.value = null
                         pollListener?.remove()
                     } else {
@@ -115,7 +125,8 @@ class OnlinePollManager {
     suspend fun vote(optionId: Int, voterId: String): Boolean {
         val poll = _currentPoll.value ?: return false
         if (poll.votedUserIds.contains(voterId)) return false
-        if (poll.status == PollStatus.ENDED || System.currentTimeMillis() > poll.endTimeMillis) return false
+        // Add 5 min buffer for voting to account for clock drift
+        if (poll.status == PollStatus.ENDED || System.currentTimeMillis() > (poll.endTimeMillis + 300000)) return false
         
         return try {
             db.runTransaction { transaction ->
@@ -123,7 +134,7 @@ class OnlinePollManager {
                 val freshPoll = snapshot.toObject(Poll::class.java) ?: return@runTransaction
                 
                 if (freshPoll.votedUserIds.contains(voterId)) return@runTransaction
-                if (freshPoll.status == PollStatus.ENDED || System.currentTimeMillis() > freshPoll.endTimeMillis) return@runTransaction
+                if (freshPoll.status == PollStatus.ENDED || System.currentTimeMillis() > (freshPoll.endTimeMillis + 300000)) return@runTransaction
                 
                 val updatedOptions = freshPoll.options.map { option ->
                     if (option.id == optionId) option.copy(votes = option.votes + 1) else option

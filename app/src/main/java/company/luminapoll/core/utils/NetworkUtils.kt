@@ -7,8 +7,15 @@ object NetworkUtils {
     fun getLocalIpAddress(): String {
         try {
             val interfaces = NetworkInterface.getNetworkInterfaces()
-            while (interfaces.hasMoreElements()) {
-                val networkInterface = interfaces.nextElement()
+            val interfaceList = interfaces.toList()
+            
+            // Prioritize hotspot/AP interfaces (usually ap0, softap, wlan1)
+            val prioritizedInterfaces = interfaceList.sortedByDescending { 
+                val name = it.name.lowercase()
+                name.contains("ap") || name.contains("softap") || name.contains("wlan1")
+            }
+
+            for (networkInterface in prioritizedInterfaces) {
                 val addresses = networkInterface.inetAddresses
                 while (addresses.hasMoreElements()) {
                     val address = addresses.nextElement()
@@ -21,5 +28,12 @@ object NetworkUtils {
             e.printStackTrace()
         }
         return "127.0.0.1"
+    }
+
+    fun getGatewayIpAddress(): String? {
+        val ip = getLocalIpAddress()
+        if (ip == "127.0.0.1") return null
+        // On most Android hotspots, the host is .1
+        return ip.substringBeforeLast(".") + ".1"
     }
 }

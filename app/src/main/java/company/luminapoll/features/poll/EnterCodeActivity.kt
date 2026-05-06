@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 
 import android.text.Editable
 import android.text.TextWatcher
+import kotlinx.coroutines.delay
 
 /**
  * TODO: Future Feature - Implement automatic poll joining via deep links and QR codes.
@@ -114,10 +115,8 @@ class EnterCodeActivity : BaseActivity() {
             return
         }
 
-        var foundViaNsd = false
         (application as LuminaPollApp).nsdHelper.discoverServices { service ->
             if (service.serviceName == "LuminaPoll_$code") {
-                foundViaNsd = true
                 val hostIp = service.host.hostAddress
                 if (hostIp != null) {
                     runOnUiThread {
@@ -136,13 +135,23 @@ class EnterCodeActivity : BaseActivity() {
                 val hostIp = "$hostIpPrefix.$lastByte"
                 (application as LuminaPollApp).localClient.connect(hostIp, userName, deviceId)
             }
+            
+            // Hotspot fallback: try the gateway IP if we haven't connected yet
+            delay(1500)
+            if ((application as LuminaPollApp).localClient.pollState.value == null) {
+                NetworkUtils.getGatewayIpAddress()?.let { gatewayIp ->
+                    if (gatewayIp != "127.0.0.1") {
+                        (application as LuminaPollApp).localClient.connect(gatewayIp, userName, deviceId)
+                    }
+                }
+            }
 
-            // Wait to see if we connected or found via NSD (Extended to 4s for slow radios)
-            kotlinx.coroutines.delay(4000)
+            // Wait to see if we connected (Extended to 5s total for slow radios/hotspots)
+            delay(3500)
 
             if ((application as LuminaPollApp).localClient.pollState.value == null) {
                 btnJoin.isEnabled = true
-                showAppMessage(AppMessage("Poll not found. Please check the code.", MessageType.ERROR, ErrorType.NETWORK, MessageSeverity.INLINE), tvInlineError)
+                showAppMessage(AppMessage("Poll not found. Please check the code or your connection.", MessageType.ERROR, ErrorType.NETWORK, MessageSeverity.INLINE), tvInlineError)
             }
         }
     }

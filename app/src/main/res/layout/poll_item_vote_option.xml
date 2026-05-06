@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="64dp"
@@ -11,12 +12,22 @@
     android:orientation="horizontal"
     android:paddingHorizontal="16dp">
 
-    <View
-        android:id="@+id/v_radio_indicator"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:background="@drawable/ic_check_path"
-        android:alpha="0.2" />
+    <FrameLayout
+        android:id="@+id/v_radio_container"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:background="@drawable/bg_mode_button"
+        android:backgroundTint="#DDDDDD">
+
+        <ImageView
+            android:id="@+id/iv_radio_check"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_check"
+            android:visibility="invisible"
+            app:tint="@color/white" />
+    </FrameLayout>
 
     <TextView
         android:id="@+id/tv_option_text"

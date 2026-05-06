@@ -300,6 +300,9 @@ class CreatePollActivity : BaseActivity() {
     }
 
     private fun startPollService(poll: Poll) {
+        // Ensure client is disconnected from any previous poll before hosting
+        (application as LuminaPollApp).localClient.disconnect()
+
         val pollJson = (application as LuminaPollApp).localServer.serializePoll(poll)
         val serviceIntent = Intent(this, PollForegroundService::class.java).apply {
             action = PollForegroundService.ACTION_START
