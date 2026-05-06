@@ -152,6 +152,7 @@ abstract class BaseActivity : AppCompatActivity() {
             text = message.text
             visibility = View.VISIBLE
             setTextColor(getMessageColor(message.type))
+            setTypeface(null, android.graphics.Typeface.BOLD)
         }
     }
 
@@ -240,11 +241,14 @@ abstract class BaseActivity : AppCompatActivity() {
     }
 
     protected fun getMessageColor(type: MessageType): Int {
-        return when (type) {
-            MessageType.SUCCESS -> ContextCompat.getColor(this, R.color.status_success_text)
-            MessageType.WARNING -> ContextCompat.getColor(this, R.color.status_warning_text)
-            MessageType.ERROR -> ContextCompat.getColor(this, R.color.status_error_text)
+        val attr = when (type) {
+            MessageType.SUCCESS -> R.attr.colorStatusSuccess
+            MessageType.WARNING -> R.attr.colorStatusWarning
+            MessageType.ERROR -> R.attr.colorStatusError
         }
+        val typedValue = android.util.TypedValue()
+        theme.resolveAttribute(attr, typedValue, true)
+        return typedValue.data
     }
 
     /**

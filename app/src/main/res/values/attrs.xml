@@ -5,4 +5,9 @@
     <attr name="colorModePrimary" format="color" />
     <attr name="colorModeSecondary" format="color" />
     <attr name="colorModeButtonText" format="color" />
+
+    <!-- Theme-aware status colors -->
+    <attr name="colorStatusSuccess" format="color" />
+    <attr name="colorStatusWarning" format="color" />
+    <attr name="colorStatusError" format="color" />
 </resources>

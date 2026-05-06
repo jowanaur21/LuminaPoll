@@ -7,7 +7,6 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
-import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.lifecycle.lifecycleScope
 import company.luminapoll.LuminaPollApp
@@ -22,10 +21,10 @@ import android.text.TextWatcher
 
 class EnterCodeActivity : BaseActivity() {
 
-    private lateinit var progressBar: ProgressBar
     private lateinit var btnJoin: Button
     private lateinit var etPollCode: EditText
     private lateinit var tvInlineError: TextView
+    private var searchJob: kotlinx.coroutines.Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,6 +70,8 @@ class EnterCodeActivity : BaseActivity() {
                 val expectedLength = if (mode == "LOCAL") 4 else 6
                 updateSubmitButtonState(btnJoin, code.length == expectedLength)
                 tvInlineError.visibility = View.GONE
+                // Cancel any pending search if user starts typing again
+                searchJob?.cancel()
             }
             override fun afterTextChanged(s: Editable?) {}
         })
@@ -95,6 +96,7 @@ class EnterCodeActivity : BaseActivity() {
 
     private fun joinLocalPoll(code: String) {
         btnJoin.isEnabled = false
+        searchJob?.cancel()
         
         val userName = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.displayName ?: "Android User"
         val deviceId = company.luminapoll.core.utils.DeviceIdProvider.getDeviceId(this)
@@ -123,15 +125,14 @@ class EnterCodeActivity : BaseActivity() {
         val lastByteHex = if (code.length >= 2) code.take(2) else ""
         val lastByte = try { Integer.parseInt(lastByteHex, 16) } catch (e: Exception) { -1 }
         
-        // Start a search timeout
-        lifecycleScope.launch {
+        searchJob = lifecycleScope.launch {
             if (lastByte != -1) {
                 val hostIp = "$hostIpPrefix.$lastByte"
                 (application as LuminaPollApp).localClient.connect(hostIp, userName, deviceId)
             }
 
-            // Wait to see if we connected or found via NSD
-            kotlinx.coroutines.delay(2000)
+            // Wait to see if we connected or found via NSD (Extended to 4s for slow radios)
+            kotlinx.coroutines.delay(4000)
 
             if ((application as LuminaPollApp).localClient.pollState.value == null) {
                 btnJoin.isEnabled = true
@@ -165,14 +166,26 @@ class EnterCodeActivity : BaseActivity() {
         if (mode == "LOCAL") {
             lifecycleScope.launch {
                 (application as LuminaPollApp).localClient.errorFlow.collectLatest { error ->
+                    // Cancel search job because network already gave us an answer
+                    searchJob?.cancel()
                     btnJoin.isEnabled = true
-                    showAppMessage(AppMessage(error, MessageType.ERROR, ErrorType.NETWORK, MessageSeverity.MODAL))
+                    
+                    // Standardize join-related errors to INLINE for better UX
+                    if (error.contains("refused", true) || error.contains("not found", true) || error.contains("ended", true)) {
+                        showAppMessage(AppMessage("Poll not found. Please check the code.", MessageType.ERROR, ErrorType.NETWORK, MessageSeverity.INLINE), tvInlineError)
+                    } else {
+                        showAppMessage(AppMessage(error, MessageType.ERROR, ErrorType.NETWORK, MessageSeverity.MODAL))
+                    }
                 }
             }
             lifecycleScope.launch {
                 (application as LuminaPollApp).localClient.pollState.collectLatest { poll ->
                     if (poll != null) {
+                        // SUCCESS: Clear everything immediately
+                        searchJob?.cancel()
+                        tvInlineError.visibility = View.GONE
                         btnJoin.isEnabled = true
+                        
                         (application as LuminaPollApp).nsdHelper.stopDiscovery()
                         showAppMessage(AppMessage("Connected to local poll!", MessageType.SUCCESS, severity = MessageSeverity.TOAST))
                         
