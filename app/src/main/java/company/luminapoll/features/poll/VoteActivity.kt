@@ -37,7 +37,7 @@ class VoteActivity : BaseActivity() {
         initViews()
         
         applyModeTheme(
-            rootLayout = findViewById(R.id.main),
+            rootLayout = findViewById(R.id.vote_scroll_view),
             primaryButtons = listOf(btnSubmit),
             accentIcons = listOf(findViewById(R.id.btn_back))
         )
@@ -165,7 +165,7 @@ class VoteActivity : BaseActivity() {
         if (poll.votedUserIds.contains(currentUserId) || poll.status == company.luminapoll.core.network.PollStatus.ENDED) {
             if (poll.status == company.luminapoll.core.network.PollStatus.ENDED) {
                 val intent = Intent(this, PollResultActivity::class.java).apply {
-                    val pollJson = (application as company.luminapoll.LuminaPollApp).localServer.serializePoll(poll)
+                    val pollJson = (application as LuminaPollApp).localServer.serializePoll(poll)
                     putExtra("EXTRA_POLL_JSON", pollJson)
                     putExtra("EXTRA_MODE", mode)
                     putExtra("EXTRA_ROLE", "JOINER")
