@@ -5,31 +5,27 @@ LuminaPoll is a versatile Android application designed to facilitate seamless po
 ## 🚀 Key Features
 
 ### 📡 "Magic" Offline Connectivity
-- **Zero-Config Discovery**: Participants don't need to type IP addresses; polls appear automatically using Network Service Discovery (NSD).
+- **Zero-Config Discovery**: Participants don't need to type IP addresses; all nearby polls appear automatically using a robust **NSD Resolve Queue** that handles multiple hosts simultaneously.
 - **Host-as-a-Server**: Your phone becomes a real-time server using **Ktor**, allowing polling in areas with zero internet.
-- **Smart Fallback (4-Digit Code)**: A unique 4-character hex code (e.g., `AE1B`) that embeds the host's IP for 100% connection reliability without manual entry.
+- **Hotspot Support**: Optimized for Android hotspots with automatic gateway detection for 100% connectivity when the host is also the Wi-Fi provider.
+- **Smart Fallback (4-Digit Code)**: A unique 4-character hex code (e.g., `AE1B`) that embeds the host's IP for reliable connection without manual discovery.
 
 ### 🌐 Global Online Connectivity
 - **Cloud Hosting**: Share your voice globally with Firebase-backed online polls.
 - **Secure Access (6-Digit Code)**: Robust 6-character random codes (e.g., `AB12CD`) ensure global uniqueness and ease of sharing.
-
-### ⚡ Real-Time Visualization
-- **Live "Lumina" Bars**: Watch public opinion shift in real-time with smooth progress bars as votes are cast.
-- **Instant Feedback**: Uses high-speed WebSockets for local mode and Firestore real-time sync for online, ensuring sub-second latency.
+- **Clock Drift Resilience**: Intelligent 5-minute buffers ensure voters can join and vote even if their device clocks aren't perfectly synchronized with the host.
 
 ### 🎨 Context-Aware Interface
 - **Adaptive Theming**: The app visually shifts between "Deep Sea Blue" (Local) and "Royal Purple" (Online).
-- **Streamlined Creation**: Just enter your question and options. The app automatically uses your question as the poll title to get you hosting faster.
+- **Refined Voting UI**: Clean, distraction-free voting with green checkmark indicators and neutral backgrounds for maximum clarity.
 
-### 🔐 High Integrity & Security
+### 🔐 High Integrity & Persistence
 - **Anti-Double Voting**: Prevents double-counting by tracking unique Device IDs (Local) or Firebase UIDs (Online).
-- **Smart Identity Persistence**: If a host accidentally closes the app, re-entering via code automatically restores their Host role and themes.
-- **Automated Cleanup**: 
-  - Local polls vanish 1 hour after ending
-  - Online polls are automatically deleted from the cloud after 24 hours.
+- **Result Persistence**: Polls and results are **never automatically deleted**. Even after a poll ends, the data remains available for viewing as long as the host maintains the session (Local) or as a permanent record in the cloud (Online).
+- **Host Protection**: Only the original host can officially end a poll or update its global status, preventing unauthorized state changes.
 
-### 🔄 Session Continuity
-- **Host Shortcuts**: The dashboard automatically detects if you have an active hosting session and provides a one-tap shortcut to your live results.
+### 🔄 Session Security
+- **Explicit Entry**: The "Enter Code" screen always requires a manual code entry and search, preventing accidental auto-redirections to old sessions and ensuring user intent.
 
 ## 🛠 Tech Stack
 - **Language**: Kotlin

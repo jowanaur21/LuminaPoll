@@ -27,47 +27,37 @@ The app relies heavily on **Kotlin Flows** (`StateFlow` and `SharedFlow`) and **
 This is the most complex part of the app. It turns one phone into a server and others into clients.
 *   **Hosting:**
     *   `KtorLocalServer.kt` starts an embedded HTTP/WebSocket server on the host's phone.
-    *   `NsdHelper.kt` broadcasts the server's presence over the local network using mDNS (Bonjour/ZeroConf) so other phones can discover it.
+    *   `NsdHelper.kt` broadcasts the server's presence.
 *   **Joining:**
-    *   `ScanPollsActivity.kt` uses `NsdHelper` to scan the network for active polls.
-    *   Alternatively, `EnterCodeActivity.kt` parses the 4-digit code (which secretly contains the last byte of the host's IP address) to connect directly.
-    *   `KtorLocalClient.kt` connects to the host via WebSockets.
-*   **Real-time updates:** Votes are sent via WebSockets. The server updates its `StateFlow`, which broadcasts the new state back to all connected clients instantly.
+    *   `ScanPollsActivity.kt` uses a robust **Resolve Queue** in `NsdHelper.kt` to scan the network. This queue solves the common Android NSD bug where multiple simultaneous resolutions fail.
+    *   `EnterCodeActivity.kt` uses the 4-digit code and a **Gateway IP Fallback** to ensure connectivity even when the host is a Wi-Fi Hotspot.
+*   **Persistence:** Local results persist as long as the server is running. Automatic shutdown on expiry has been disabled to allow voters to view results at their own pace.
 
 ### 2. Online Polling Flow (Firebase)
 This flow uses Google's Firebase Firestore for global connectivity.
-*   **Manager:** `OnlinePollManager.kt` is the single source of truth for online operations.
-*   **Real-time updates:** It uses Firestore's `addSnapshotListener`. Whenever a vote is cast in the database, Firebase pushes the update to the app, updating the `StateFlow`.
-*   **Voting:** Uses `db.runTransaction` to ensure that even if 100 people vote at the exact same millisecond, the counts remain perfectly accurate.
+*   **Manager:** `OnlinePollManager.kt` is the single source of truth.
+*   **Clock Drift Handling:** The manager implements a 5-minute grace period for voting and joining, preventing "Poll Ended" errors caused by unsynchronized device clocks.
+*   **Host-Only Authority:** Only the host UID is authorized to update a poll's status to `ENDED` in Firestore, preventing voters with fast clocks from accidentally closing the poll for everyone.
 
 ---
 
 ## 🐛 Debugging Guide (How to fix things)
 
-If something breaks, here is where you should look:
+### Issue: "Only one poll shows up in the Scan list"
+1.  **Check:** `NsdHelper.kt` resolve queue. If the `isResolving` flag gets stuck, discovery will stall.
+2.  **Fix:** Ensure `stopDiscovery()` is called to reset the queue state.
 
-### Issue: "Local Poll isn't showing up in the Scan list"
-1.  **Check:** Are both devices on the *exact same* Wi-Fi network? (Some public Wi-Fi networks block device-to-device communication).
-2.  **Debug file:** Look in `NsdHelper.kt`. Add `Log.d("NSD", "Discovery failed")` inside the error callbacks.
-3.  **Fallback:** Tell the user to use the 4-digit manual code.
+### Issue: "Immediate 'Poll Ended' message on Online polls"
+1.  **Check:** Device clock. If the voter's clock is significantly ahead of the host's, they might see the poll as ended locally.
+2.  **Fix:** Check `OnlinePollManager.kt` buffers. We currently allow a 5-minute drift.
 
-### Issue: "Cannot connect to Local Poll via 4-digit code"
-1.  **Check:** Does the Joiner's IP subnet match the Host's? The 4-digit code relies on `NetworkUtils.getLocalIpAddress()`. If the host is on `192.168.1.5` and the joiner is on a different subnet, the code trick won't work.
-2.  **Debug file:** `EnterCodeActivity.kt` -> `joinLocalPoll()`. Check if `hostIpPrefix` is being calculated correctly.
+### Issue: "Radio buttons in VoteActivity look wrong"
+1.  **Check:** `VoteActivity.kt` -> `selectOption()`. 
+2.  **Logic:** Selection should only update `iv_radio_check` visibility and tint (Green), while keeping `v_radio_container` and the item background neutral.
 
-### Issue: "Failed to Create/Join Online Poll"
-1.  **Check:** Firebase Rules. If the user isn't logged in, or if the Firestore rules block writes, it will fail.
-2.  **Debug file:** `OnlinePollManager.kt`. Look at the `addOnFailureListener` blocks. You can add `Log.e("FirebaseError", it.message)` to print the exact Firebase error to Android Studio's Logcat.
-
-### Issue: "Participant count is wrong or inflating"
-1.  **Check:** Unique tracking logic.
-2.  **Debug files:** 
-    *   *Local:* `KtorLocalServer.kt` inside `handleMessage(message: PollMessage?)`. Look for `message.deviceId`.
-    *   *Online:* `OnlinePollManager.kt` inside `joinPoll`. Look for the `transaction` block where it checks `poll.participantIds.contains(userId)`.
-
-### Issue: "Themes are mixed up (Blue screen on an Online poll)"
-1.  **Check:** The `EXTRA_MODE` and `EXTRA_ROLE` intent flags.
-2.  **Debug file:** `BaseActivity.kt`. This class intercepts `onCreate` and applies the theme based on those flags. If a screen looks wrong, it means the Activity that launched it forgot to pass `putExtra("EXTRA_MODE", mode)`.
+### Issue: "Unexpected redirection to an old poll"
+1.  **Check:** `EnterCodeActivity.kt` -> `isSearching` flag. 
+2.  **Fix:** Ensure redirections only trigger when `isSearching` is true, preventing auto-redirection from lingering client states on activity start.
 
 ---
 
