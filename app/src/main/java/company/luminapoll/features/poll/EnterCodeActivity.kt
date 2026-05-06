@@ -19,6 +19,12 @@ import kotlinx.coroutines.launch
 import android.text.Editable
 import android.text.TextWatcher
 
+/**
+ * TODO: Future Feature - Implement automatic poll joining via deep links and QR codes.
+ * Potential formats:
+ * - company.luminapoll://join/{pollCode}
+ * - https://luminapoll.firebaseapp.com/join/{pollCode}
+ */
 class EnterCodeActivity : BaseActivity() {
 
     private lateinit var btnJoin: Button
