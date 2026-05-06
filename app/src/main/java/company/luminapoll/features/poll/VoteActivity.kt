@@ -236,22 +236,23 @@ class VoteActivity : BaseActivity() {
 
     private fun selectOption(index: Int) {
         selectedOptionIndex = index
-        val tintColor = if (mode == "ONLINE") R.color.login_btn else R.color.card_blue
         
         llOptionsContainer.children.forEachIndexed { i, view ->
             val container = view.findViewById<View>(R.id.v_radio_container)
-            val check = view.findViewById<View>(R.id.iv_radio_check)
+            val check = view.findViewById<ImageView>(R.id.iv_radio_check)
             if (i == index) {
                 check.visibility = View.VISIBLE
-                container.backgroundTintList = androidx.core.content.ContextCompat.getColorStateList(this, tintColor)
-                view.setBackgroundResource(R.drawable.bg_google_btn)
-                view.backgroundTintList = androidx.core.content.ContextCompat.getColorStateList(this, tintColor)
+                // Make the checkmark green as requested
+                check.imageTintList = androidx.core.content.ContextCompat.getColorStateList(this, R.color.result_green)
+                // Keep the circular container background neutral/white
+                container.backgroundTintList = androidx.core.content.ContextCompat.getColorStateList(this, R.color.white)
             } else {
                 check.visibility = View.INVISIBLE
                 container.backgroundTintList = androidx.core.content.ContextCompat.getColorStateList(this, R.color.result_bar_bg)
-                view.setBackgroundResource(R.drawable.bg_edittext)
-                view.backgroundTintList = null
             }
+            // Ensure the main option background remains unchanged (neutral)
+            view.setBackgroundResource(R.drawable.bg_edittext)
+            view.backgroundTintList = null
         }
         updateSubmitButtonState(btnSubmit, true)
         tvInlineError.visibility = View.GONE

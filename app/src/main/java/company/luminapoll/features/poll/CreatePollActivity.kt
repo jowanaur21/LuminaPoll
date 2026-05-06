@@ -248,28 +248,20 @@ class CreatePollActivity : BaseActivity() {
         val hostId = if (mode == "ONLINE") currentUser?.uid ?: "" else DeviceIdProvider.getDeviceId(this)
 
         if (mode == "LOCAL") {
-            val ip = NetworkUtils.getLocalIpAddress()
-            val lastByte = ip.split(".").last()
-            val hexByte = Integer.toHexString(lastByte.toInt()).uppercase().padStart(2, '0')
-            val randomPart = (('A'..'Z') + ('0'..'9')).shuffled().take(2).joinToString("")
-            val code = "$hexByte$randomPart"
-
-            val poll = Poll(
-                id = UUID.randomUUID().toString(),
-                title = question, 
-                code = code,
-                question = question,
-                options = optionsList,
-                hostIp = ip,
-                hostId = hostId,
-                hostName = hostName,
-                maxParticipants = maxParticipants,
-                durationMinutes = durationMinutes,
-                endTimeMillis = endTimeMillis
-            )
-
-            startPollService(poll)
-            navigateToCodeScreen(code)
+            // Check if a poll is already being hosted locally
+            val activePoll = (application as LuminaPollApp).localServer.pollState.value
+            if (activePoll != null) {
+                showAppMessage(
+                    AppMessage(
+                        "You are already hosting an active poll (\"${activePoll.title}\"). Starting a new one will end the current session and disconnect existing voters. Proceed?",
+                        MessageType.WARNING,
+                        severity = MessageSeverity.MODAL
+                    ),
+                    onConfirm = { executeLocalPollCreation(question, optionsList, hostId, hostName, maxParticipants, durationMinutes, endTimeMillis) }
+                )
+            } else {
+                executeLocalPollCreation(question, optionsList, hostId, hostName, maxParticipants, durationMinutes, endTimeMillis)
+            }
         } else {
             val code = (('A'..'Z') + ('0'..'9')).shuffled().take(6).joinToString("")
             val poll = Poll(
@@ -297,6 +289,39 @@ class CreatePollActivity : BaseActivity() {
                 }
             }
         }
+    }
+
+    private fun executeLocalPollCreation(
+        question: String,
+        optionsList: List<PollOption>,
+        hostId: String,
+        hostName: String,
+        maxParticipants: Int,
+        durationMinutes: Int,
+        endTimeMillis: Long
+    ) {
+        val ip = NetworkUtils.getLocalIpAddress()
+        val lastByte = ip.split(".").last()
+        val hexByte = Integer.toHexString(lastByte.toInt()).uppercase().padStart(2, '0')
+        val randomPart = (('A'..'Z') + ('0'..'9')).shuffled().take(2).joinToString("")
+        val code = "$hexByte$randomPart"
+
+        val poll = Poll(
+            id = UUID.randomUUID().toString(),
+            title = question, 
+            code = code,
+            question = question,
+            options = optionsList,
+            hostIp = ip,
+            hostId = hostId,
+            hostName = hostName,
+            maxParticipants = maxParticipants,
+            durationMinutes = durationMinutes,
+            endTimeMillis = endTimeMillis
+        )
+
+        startPollService(poll)
+        navigateToCodeScreen(code)
     }
 
     private fun startPollService(poll: Poll) {

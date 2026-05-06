@@ -32,10 +32,16 @@ class EnterCodeActivity : BaseActivity() {
     private lateinit var etPollCode: EditText
     private lateinit var tvInlineError: TextView
     private var searchJob: kotlinx.coroutines.Job? = null
+    private var isSearching = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.poll_activity_enter_code)
+        
+        // Ensure clean state: don't auto-redirect to previous polls
+        if (mode == "LOCAL") {
+            (application as LuminaPollApp).localClient.disconnect()
+        }
 
         initViews()
         setupModeUI()
@@ -56,6 +62,7 @@ class EnterCodeActivity : BaseActivity() {
             val expectedLength = if (mode == "LOCAL") 4 else 6
             
             if (code.length == expectedLength) {
+                isSearching = true
                 showAppMessage(AppMessage("Searching for poll...", MessageType.WARNING, severity = MessageSeverity.TOAST))
                 if (mode == "LOCAL") {
                     joinLocalPoll(code)
@@ -79,6 +86,7 @@ class EnterCodeActivity : BaseActivity() {
                 tvInlineError.visibility = View.GONE
                 // Cancel any pending search if user starts typing again
                 searchJob?.cancel()
+                isSearching = false
             }
             override fun afterTextChanged(s: Editable?) {}
         })
@@ -107,13 +115,6 @@ class EnterCodeActivity : BaseActivity() {
         
         val userName = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.displayName ?: "Android User"
         val deviceId = company.luminapoll.core.utils.DeviceIdProvider.getDeviceId(this)
-
-        // Check if we are the host re-joining our own poll
-        val activeLocalPoll = (application as LuminaPollApp).localServer.pollState.value
-        if (activeLocalPoll != null && activeLocalPoll.code == code) {
-            (application as LuminaPollApp).localClient.connect("127.0.0.1", userName, deviceId)
-            return
-        }
 
         (application as LuminaPollApp).nsdHelper.discoverServices { service ->
             if (service.serviceName == "LuminaPoll_$code") {
@@ -164,6 +165,7 @@ class EnterCodeActivity : BaseActivity() {
         (application as LuminaPollApp).onlinePollManager.joinPoll(code, userId) { poll, error ->
             btnJoin.isEnabled = true
             if (poll != null) {
+                isSearching = false
                 showAppMessage(AppMessage("Joined poll successfully!", MessageType.SUCCESS, severity = MessageSeverity.TOAST))
                 if (poll.hostId == userId) {
                     navigateToHost(poll.code)
@@ -171,6 +173,7 @@ class EnterCodeActivity : BaseActivity() {
                     navigateToVote()
                 }
             } else {
+                isSearching = false
                 val errorMsg = if (error?.contains("not found", ignoreCase = true) == true) "Poll not found. Please check the code." else (error ?: "Unknown error")
                 showAppMessage(AppMessage(errorMsg, MessageType.ERROR, ErrorType.NETWORK, MessageSeverity.INLINE), tvInlineError)
             }
@@ -181,23 +184,27 @@ class EnterCodeActivity : BaseActivity() {
         if (mode == "LOCAL") {
             lifecycleScope.launch {
                 (application as LuminaPollApp).localClient.errorFlow.collectLatest { error ->
-                    // Cancel search job because network already gave us an answer
-                    searchJob?.cancel()
-                    btnJoin.isEnabled = true
-                    
-                    // Standardize join-related errors to INLINE for better UX
-                    if (error.contains("refused", true) || error.contains("not found", true) || error.contains("ended", true)) {
-                        showAppMessage(AppMessage("Poll not found. Please check the code.", MessageType.ERROR, ErrorType.NETWORK, MessageSeverity.INLINE), tvInlineError)
-                    } else {
-                        showAppMessage(AppMessage(error, MessageType.ERROR, ErrorType.NETWORK, MessageSeverity.MODAL))
+                    if (isSearching) {
+                        // Cancel search job because network already gave us an answer
+                        searchJob?.cancel()
+                        btnJoin.isEnabled = true
+                        isSearching = false
+                        
+                        // Standardize join-related errors to INLINE for better UX
+                        if (error.contains("refused", true) || error.contains("not found", true) || error.contains("ended", true)) {
+                            showAppMessage(AppMessage("Poll not found. Please check the code.", MessageType.ERROR, ErrorType.NETWORK, MessageSeverity.INLINE), tvInlineError)
+                        } else {
+                            showAppMessage(AppMessage(error, MessageType.ERROR, ErrorType.NETWORK, MessageSeverity.MODAL))
+                        }
                     }
                 }
             }
             lifecycleScope.launch {
                 (application as LuminaPollApp).localClient.pollState.collectLatest { poll ->
-                    if (poll != null) {
+                    if (poll != null && isSearching) {
                         // SUCCESS: Clear everything immediately
                         searchJob?.cancel()
+                        isSearching = false
                         tvInlineError.visibility = View.GONE
                         btnJoin.isEnabled = true
                         

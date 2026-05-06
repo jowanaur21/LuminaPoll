@@ -69,6 +69,14 @@ class DashboardActivity : BaseActivity() {
                 }
             }
         }
+
+        /**
+         * TODO: Implementation - Local History Feature
+         * To prevent data loss in Local Mode when a new poll is created:
+         * 1. Create a Room database or use SharedPreferences to store Poll summaries.
+         * 2. In KtorLocalServer.stop(), save the current _pollState to this local database.
+         * 3. Add a "History" button to the Dashboard (or within the drawer) to view these saved results.
+         */
     }
 
     private fun updateUiForMode() {

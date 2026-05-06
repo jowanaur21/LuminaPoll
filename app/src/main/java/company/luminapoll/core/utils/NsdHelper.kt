@@ -39,6 +39,9 @@ class NsdHelper(context: Context) {
         nsdManager.registerService(serviceInfo, NsdManager.PROTOCOL_DNS_SD, registrationListener)
     }
 
+    private val resolveQueue = java.util.ArrayDeque<NsdServiceInfo>()
+    private var isResolving = false
+
     fun discoverServices(onServiceFound: (NsdServiceInfo) -> Unit) {
         discoveryListener = object : NsdManager.DiscoveryListener {
             override fun onDiscoveryStarted(regType: String) {
@@ -46,17 +49,20 @@ class NsdHelper(context: Context) {
             }
 
             override fun onServiceFound(service: NsdServiceInfo) {
-                if (service.serviceType == SERVICE_TYPE) {
-                    nsdManager.resolveService(service, object : NsdManager.ResolveListener {
-                        override fun onResolveFailed(serviceInfo: NsdServiceInfo, errorCode: Int) {}
-                        override fun onServiceResolved(serviceInfo: NsdServiceInfo) {
-                            onServiceFound(serviceInfo)
-                        }
-                    })
+                // Some Android versions return the service type with a trailing dot, others don't.
+                // We use contains to be safe.
+                if (service.serviceType.contains("luminapoll", ignoreCase = true)) {
+                    synchronized(resolveQueue) {
+                        resolveQueue.add(service)
+                        processNextResolve(onServiceFound)
+                    }
                 }
             }
 
-            override fun onServiceLost(service: NsdServiceInfo) {}
+            override fun onServiceLost(service: NsdServiceInfo) {
+                Log.d("NSD", "Service lost: ${service.serviceName}")
+            }
+
             override fun onDiscoveryStopped(regType: String) {}
             override fun onStartDiscoveryFailed(regType: String, errorCode: Int) {
                 nsdManager.stopServiceDiscovery(this)
@@ -69,9 +75,47 @@ class NsdHelper(context: Context) {
         nsdManager.discoverServices(SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, discoveryListener)
     }
 
+    private fun processNextResolve(onServiceFound: (NsdServiceInfo) -> Unit) {
+        synchronized(resolveQueue) {
+            if (isResolving || resolveQueue.isEmpty()) return
+            
+            isResolving = true
+            val service = resolveQueue.poll()
+            
+            nsdManager.resolveService(service, object : NsdManager.ResolveListener {
+                override fun onResolveFailed(serviceInfo: NsdServiceInfo, errorCode: Int) {
+                    Log.e("NSD", "Resolve failed: $errorCode for ${serviceInfo.serviceName}")
+                    synchronized(resolveQueue) {
+                        isResolving = false
+                        processNextResolve(onServiceFound)
+                    }
+                }
+
+                override fun onServiceResolved(serviceInfo: NsdServiceInfo) {
+                    Log.d("NSD", "Service resolved: ${serviceInfo.serviceName} at ${serviceInfo.host}:${serviceInfo.port}")
+                    onServiceFound(serviceInfo)
+                    synchronized(resolveQueue) {
+                        isResolving = false
+                        processNextResolve(onServiceFound)
+                    }
+                }
+            })
+        }
+    }
+
     fun stopDiscovery() {
-        discoveryListener?.let { nsdManager.stopServiceDiscovery(it) }
+        discoveryListener?.let { 
+            try {
+                nsdManager.stopServiceDiscovery(it)
+            } catch (e: Exception) {
+                Log.e("NSD", "Error stopping discovery", e)
+            }
+        }
         discoveryListener = null
+        synchronized(resolveQueue) {
+            resolveQueue.clear()
+            isResolving = false
+        }
     }
 
     fun unregisterService() {

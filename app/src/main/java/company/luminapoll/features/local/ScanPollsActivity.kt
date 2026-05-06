@@ -58,6 +58,19 @@ class ScanPollsActivity : BaseActivity() {
                 putExtra("EXTRA_ROLE", role)
             })
         }
+        
+        radarIcon.setOnClickListener {
+            restartDiscovery()
+        }
+    }
+
+    private fun restartDiscovery() {
+        (application as LuminaPollApp).nsdHelper.stopDiscovery()
+        discoveredPolls.clear()
+        llPollsContainer.removeAllViews()
+        startRadarAnimation()
+        startDiscovery()
+        showAppMessage(AppMessage("Refreshing poll list...", MessageType.SUCCESS, severity = MessageSeverity.TOAST))
     }
 
     private fun startRadarAnimation() {
@@ -71,17 +84,17 @@ class ScanPollsActivity : BaseActivity() {
 
     private fun startDiscovery() {
         (application as LuminaPollApp).nsdHelper.discoverServices { service ->
-            lifecycleScope.launch {
-                val hostIp = service.host.hostAddress
+            lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                val hostIp = service.host?.hostAddress
+                val port = service.port
                 if (hostIp != null) {
-                    val poll = (application as LuminaPollApp).localClient.fetchPollDetails(hostIp)
-                    if (poll != null && discoveredPolls.none { it.id == poll.id }) {
-                        runOnUiThread {
-                            discoveredPolls.add(poll)
-                            addPollToLayout(poll)
-                            
-                            radarIcon.clearAnimation()
-                            radarIcon.visibility = View.GONE
+                    val poll = (application as LuminaPollApp).localClient.fetchPollDetails(hostIp, port)
+                    if (poll != null) {
+                        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                            if (discoveredPolls.none { it.id == poll.id }) {
+                                discoveredPolls.add(poll)
+                                addPollToLayout(poll)
+                            }
                         }
                     }
                 }
